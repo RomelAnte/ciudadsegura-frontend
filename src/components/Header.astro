@@ -1,0 +1,53 @@
+---
+import Logo from './Logo.astro';
+---
+<header style="display: flex; align-items: center">
+    <div style="height: 100%; background-color: #011f5b;">
+        <Logo />
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h4 class="fw-bold text-white">Centro de Comando Digital</h4>                        
+                    </div>
+                    <div class="col-md-4 d-flex align-items-center">
+                        <span class="text-white"><i class="bi bi-circle-fill"></i> <strong>SISTEMA EN VIVO</strong></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <input type="text" placeholder="Buscar..." class="form-control" />
+            </div>
+            <div class="col-md-3 ">
+                <button class="btn">
+                    <i class="bi bi-bell"></i>
+                </button>
+                <button class="btn">
+                    <i class="bi bi-question-circle"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<style>
+    header {
+        background: linear-gradient(to right, #19346a, #19346b, #19346a);
+    }
+
+    h2 {
+        margin: 0;
+    }
+
+    input[type="text"] {
+        padding: 0.5rem;
+        margin-right: 0.5rem;
+    }
+
+    button.btn {
+        padding: 0.5rem 1rem;
+        margin-left: 0.5rem;
+    }
+</style>

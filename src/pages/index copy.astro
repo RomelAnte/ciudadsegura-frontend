@@ -1,0 +1,144 @@
+---
+// Frontmatter: corre en el servidor. Por ahora no necesitamos nada aquí,
+// pero aquí es donde más adelante harías un fetch para precargar datos
+// (ej. para el mapa, cuando pidamos los reportes existentes).
+---
+
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<title>CiudadSegura</title>
+	</head>
+	<body>
+		<h1>Reportar incidente</h1>
+
+		<form id="report-form">
+			<label>
+				Descripción
+				<textarea name="description" required></textarea>
+			</label>
+
+			<label>
+				Dirección
+				<input type="text" name="address" required />
+			</label>
+
+			<!-- Por ahora manuales. Cuando integremos Leaflet, estos dos
+			     se van a llenar solos al hacer click en el mapa. -->
+			<label>
+				Latitud
+				<input type="number" step="any" name="latitude" required />
+			</label>
+			<label>
+				Longitud
+				<input type="number" step="any" name="longitude" required />
+			</label>
+
+			<label>
+				Foto (opcional)
+				<input type="file" name="picture" accept="image/*" />
+			</label>
+
+			<button type="submit">Enviar reporte</button>
+		</form>
+
+		<p id="status"></p>
+
+		<h2>Reportes existentes</h2>
+		<div id="map"></div>
+
+		<style>
+			#map {
+				height: 400px;
+				width: 100%;
+			}
+		</style>
+
+		<script>
+			// Esto SÍ corre en el navegador. Es tu fetch/AJAX de siempre.
+			const API_URL = import.meta.env.PUBLIC_API_URL;
+
+			const form = document.getElementById('report-form') as HTMLFormElement;
+			const status = document.getElementById('status') as HTMLParagraphElement;
+
+			form.addEventListener('submit', async (event) => {
+				event.preventDefault();
+
+				// FormData lee directamente los inputs del form por su atributo "name".
+				// Esto es clave: como tu picture es ImageField y probaste con éxito
+				// multipart/form-data en Postman, FormData hace exactamente eso mismo.
+				const formData = new FormData(form);
+
+				status.textContent = 'Enviando...';
+
+				try {
+					const response = await fetch(`${API_URL}/api/reportes/`, {
+						method: 'POST',
+						body: formData,
+						// IMPORTANTE: no pongas headers de Content-Type manualmente.
+						// El navegador genera el boundary correcto del multipart solo.
+						// Si lo fuerzas a mano, DRF no puede parsear el body.
+					});
+
+					if (!response.ok) {
+						const errorData = await response.json();
+						throw new Error(JSON.stringify(errorData));
+					}
+
+					const data = await response.json();
+					status.textContent = `Reporte creado con id ${data.id}`;
+					form.reset();
+				} catch (err) {
+					console.error(err);
+					status.textContent = 'Error al enviar el reporte. Revisa la consola.';
+				}
+			});
+		</script>
+
+		<script>
+			import L from 'leaflet';
+			import 'leaflet/dist/leaflet.css';
+
+			// Fix del ícono roto (explicado arriba)
+			import icon from 'leaflet/dist/images/marker-icon.png';
+			import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+			const DefaultIcon = L.icon({
+				iconUrl: icon.src ?? icon,
+				shadowUrl: iconShadow.src ?? iconShadow,
+			});
+			L.Marker.prototype.options.icon = DefaultIcon;
+
+			const API_URL = import.meta.env.PUBLIC_API_URL;
+
+			// Centro inicial: Quito. Ajusta si tu comité barrial está en otra zona.
+			const map = L.map('map').setView([-0.1807, -78.4678], 13);
+
+			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				attribution: '&copy; OpenStreetMap contributors',
+			}).addTo(map);
+
+			async function loadReports() {
+				try {
+					const response = await fetch(`${API_URL}/api/reports/`);
+					if (!response.ok) throw new Error('No se pudieron cargar los reportes');
+
+					const reports = await response.json();
+
+					for (const report of reports) {
+						L.marker([report.latitude, report.longitude])
+							.addTo(map)
+							.bindPopup(
+								`<strong>${report.address}</strong><br>${report.description}`
+							);
+					}
+				} catch (err) {
+					console.error('Error cargando reportes:', err);
+				}
+			}
+
+			loadReports();
+		</script>
+	</body>
+</html>

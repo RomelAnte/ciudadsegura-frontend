@@ -1,0 +1,91 @@
+---
+const menuSections = [
+    {
+        title: "PRINCIPAL",
+        items: [
+            {
+                name: "Dashboard",
+                href: "/dashboard",
+                icon: "bi bi-speedometer2",
+            },
+            {
+                name: "Mapa de Calor",
+                href: "/heatmap",
+                icon: "bi bi-geo-alt",
+            },
+        ],
+    },
+    {
+        title: "ADMINISTRACION",
+        items: [
+            {
+                name: "Gestion de Usuarios",
+                href: "/user-management",
+                icon: "bi bi-people",
+            },
+            {
+                name: "Alertas Globales",
+                href: "/global-alerts",
+                icon: "bi bi-bell",
+            },
+            {
+                name: "Configuracion",
+                href: "/settings",
+                icon: "bi bi-gear",
+            },
+        ],
+    },
+    {
+        title: "ANALISIS",
+        items: [
+            {
+                name: "Reporte Avanzado",
+                href: "/advanced-report",
+                icon: "bi bi-bar-chart",
+            },
+            {
+                name: "Historial de Eventos",
+                href: "/event-history",
+                icon: "bi bi-clock",
+            },
+        ],
+    },
+];
+---
+
+<nav>
+    <ul class="nav nav-pills flex-column mb-auto">
+        {menuSections.map((section) => (
+            <Fragment>
+                <li class="nav-item">
+                    <span>{section.title}</span>
+                </li>
+
+                {section.items.map((item) => (
+                    <li>
+                        <a href={item.href} class="nav-link text-white">
+                            <i class={item.icon}></i> {item.name}
+                        </a>
+                    </li>
+                ))}
+            </Fragment>
+        ))}
+    </ul>
+</nav>
+
+<style>
+    span {
+        color: #4d628c !important;
+        font-size: 10px;
+        font-weight: bold;
+        margin-left: 1rem;
+    }
+
+    .nav-link {
+        padding: 0.5rem 1rem !important;
+    }
+
+    .nav-link:hover {
+        background-color: #4d628c !important;
+    }
+</style>
