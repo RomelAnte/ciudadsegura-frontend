@@ -1,0 +1,30 @@
+---
+interface Props {
+  activePage?: string;
+  activeRole?: 'ciudadano' | 'comite';
+}
+
+const { activePage = 'mapa', activeRole = 'ciudadano' } = Astro.props;
+---
+
+<div class="cg-bottom-nav d-md-none">
+  <a href="/" class={activePage === 'mapa' ? 'active' : ''}>
+    <i class="bi bi-map-fill"></i>
+    <span>Mapa</span>
+  </a>
+
+  <a href="/reportar" class={activePage === 'reportar' ? 'active' : ''}>
+    <i class="bi bi-plus-circle-fill text-primary"></i>
+    <span>Reportar</span>
+  </a>
+
+  <a href="/mis-reportes" class={activePage === 'mis-reportes' ? 'active' : ''}>
+    <i class="bi bi-card-checklist"></i>
+    <span>Mis Reportes</span>
+  </a>
+
+  <a href="/comite/reportes" class={activePage === 'comite' ? 'active' : ''}>
+    <i class="bi bi-shield-shaded"></i>
+    <span>Comité</span>
+  </a>
+</div>

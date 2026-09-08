@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { INITIAL_REPORTS, REPORT_STATUSES, CURRENT_USER, getReportWindowStatus } from '../scripts/reportsData';
+
+const roleParam = Astro.url.searchParams.get('role') || 'ciudadano';
+const isComite = roleParam === 'comite';
+
+// Filter only current user's reports
+const myReports = INITIAL_REPORTS.filter(r => r.userId === CURRENT_USER.id);
+---
+
+<BaseLayout title="Mis Reportes - Ciudad Segura" activeRole={isComite ? 'comite' : 'ciudadano'} activePage="mis-reportes">
+  <div class="container py-3 max-w-4xl">
+    
+    <!-- Title & Profile Header Card -->
+    <div class="cg-card p-4 mb-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="p-3 rounded-circle bg-primary bg-gradient text-white d-flex align-items-center justify-content-center shadow" style="width: 54px; height: 54px;">
+            <i class="bi bi-person-lines-fill fs-3"></i>
+          </div>
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <h1 class="h4 fw-bold text-white mb-0">Mis Reportes Comunitarios</h1>
+              <span class="badge bg-primary text-white rounded-pill px-2.5 py-1" style="font-size: 0.7rem;">
+                <i class="bi bi-check-circle me-1"></i> Vecino Verificado
+              </span>
+            </div>
+            <p class="text-slate-300 small mb-0">
+              Bienvenido, <strong class="text-white">{CURRENT_USER.name}</strong> • Sector: {CURRENT_USER.sector}
+            </p>
+          </div>
+        </div>
+
+        <a href="/reportar" class="btn btn-primary rounded-pill px-4 font-bold shadow">
+          <i class="bi bi-plus-lg me-1"></i> Crear Nuevo Reporte
+        </a>
+      </div>
+    </div>
+
+    <!-- Privacy & 3-Hour Window Notice -->
+    <div class="alert alert-dark border border-info border-opacity-25 rounded-3 mb-4 p-3" style="background: rgba(59, 130, 246, 0.08);">
+      <div class="d-flex align-items-start gap-3">
+        <i class="bi bi-shield-check text-info fs-4 flex-shrink-0"></i>
+        <div class="small text-slate-300" style="font-size: 0.8rem;">
+          <strong class="text-white d-block">Regla de Privacidad & Control Vecinal:</strong>
+          En esta pantalla se muestra su nombre (<strong class="text-info">Autor: Tú</strong>) para su propio control personal. En el mapa público y en las listas del comité, su identidad <strong class="text-warning">PERMANECE ANÓNIMA</strong>. 
+          Recuerde que puede editar o eliminar sus reportes solo durante las primeras <strong class="text-white">3 horas</strong> desde su creación.
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Cards List -->
+    <div class="d-flex flex-column gap-3">
+      {myReports.map(report => {
+        const statusInfo = REPORT_STATUSES[report.status] || REPORT_STATUSES.PENDIENTE;
+        const windowStatus = getReportWindowStatus(report.createdAt, report.userId);
+
+        return (
+          <div class="cg-card p-4 position-relative">
+            
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pb-3 mb-3 border-bottom" style="border-color: #1e3a66 !important;">
+              <div class="d-flex align-items-center gap-2">
+                <span class={`badge ${statusInfo.badgeClass} px-3 py-1.5 rounded-pill`}>
+                  <i class={`bi ${statusInfo.icon} me-1`}></i> {statusInfo.label}
+                </span>
+                <span class="small text-slate-400 font-monospace" style="font-size: 0.75rem;">{report.code}</span>
+                <span class="badge bg-slate-800 text-slate-300 border border-slate-700 px-2 py-1 rounded-pill" style="font-size: 0.7rem;">
+                  Autor: Tú
+                </span>
+              </div>
+
+              <!-- 3-Hour Countdown Indicator Badge -->
+              {windowStatus.canModify ? (
+                <span class="badge bg-warning text-dark px-3 py-1.5 rounded-pill font-monospace" style="font-size: 0.75rem;">
+                  <i class="bi bi-clock-history me-1"></i> {windowStatus.formattedTime}
+                </span>
+              ) : (
+                <span class="badge bg-slate-800 text-slate-400 border border-slate-700 px-3 py-1.5 rounded-pill font-monospace" style="font-size: 0.75rem;">
+                  <i class="bi bi-lock-fill me-1"></i> Edición Expirada (+3h)
+                </span>
+              )}
+            </div>
+
+            <div class="row align-items-center gy-3">
+              <div class="col-12 col-md-8">
+                <h2 class="h5 fw-bold text-white mb-1">{report.title}</h2>
+                <p class="text-slate-300 small mb-2 text-truncate-2" style="color: #cbd5e1; font-size: 0.85rem;">
+                  {report.description}
+                </p>
+                <div class="d-flex align-items-center gap-3 small text-slate-400" style="font-size: 0.75rem;">
+                  <span><i class="bi bi-geo-alt-fill text-danger me-1"></i>{report.locationName}</span>
+                </div>
+              </div>
+
+              <div class="col-12 col-md-4 d-flex justify-content-start justify-content-md-end gap-2">
+                <a href={`/reportes/${report.id}?role=${isComite ? 'comite' : 'ciudadano'}`} class="btn btn-sm btn-outline-info rounded-pill px-3">
+                  <i class="bi bi-eye-fill me-1"></i> Ver Detalle
+                </a>
+
+                {windowStatus.canModify ? (
+                  <button class="btn btn-sm btn-warning text-dark font-semibold rounded-pill px-3" onclick="alert('Formulario de edición activado dentro de la ventana de 3 horas.');">
+                    <i class="bi bi-pencil-square me-1"></i> Editar
+                  </button>
+                ) : (
+                  <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 opacity-50" disabled title="Ventana de 3 horas expirada">
+                    <i class="bi bi-lock me-1"></i> Expirado
+                  </button>
+                )}
+              </div>
+            </div>
+
+          </div>
+        );
+      })}
+    </div>
+
+  </div>
+</BaseLayout>

@@ -1,0 +1,163 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Crear Cuenta Vecinal - Comité de Seguridad" activeRole="comite" activePage="comite">
+  <div class="container py-3 max-w-3xl">
+    
+    <!-- Navigation Header Card -->
+    <div class="cg-card p-4 mb-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+          <div class="p-3 rounded-circle bg-success bg-gradient text-white d-flex align-items-center justify-content-center shadow" style="width: 48px; height: 48px;">
+            <i class="bi bi-person-plus-fill fs-3"></i>
+          </div>
+          <div>
+            <h1 class="h4 fw-bold text-white mb-0">Registrar Nuevo Vecino en la Red</h1>
+            <p class="text-slate-300 small mb-0">Directiva del Comité • Creación de credenciales privadas</p>
+          </div>
+        </div>
+
+        <a href="/comite/reportes" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+          <i class="bi bi-arrow-left me-1"></i> Volver al Panel
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Registration Form Card -->
+    <div class="cg-card p-4 p-md-5">
+      
+      <div class="alert alert-dark border border-warning border-opacity-25 rounded-3 mb-4 p-3" style="background: rgba(245, 158, 11, 0.08);">
+        <div class="d-flex align-items-start gap-2">
+          <i class="bi bi-shield-lock-fill text-warning fs-5 flex-shrink-0 mt-0.5"></i>
+          <div class="small text-slate-300" style="font-size: 0.8rem;">
+            <strong class="text-white d-block">Control de Seguridad Barrio La Carolina:</strong>
+            El registro público está desactivado. Las cuentas creadas aquí otorgan acceso exclusivo para emitir reportes vecinales y recibir alertas del sector.
+          </div>
+        </div>
+      </div>
+
+      <form id="create-user-form" action="/comite/reportes" method="GET">
+        
+        <div class="row g-3 mb-4">
+          <!-- Full Name -->
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-semibold text-slate-300">Nombres y Apellidos Completos <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-slate-900 border-slate-700 text-slate-400" style="background: #0b1d3a; border-color: #1e3a66;">
+                <i class="bi bi-person-fill"></i>
+              </span>
+              <input type="text" class="form-control" placeholder="Ej: Fernando Robalino" required />
+            </div>
+          </div>
+
+          <!-- Identification ID -->
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-semibold text-slate-300">Cédula o Pasaporte <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-slate-900 border-slate-700 text-slate-400" style="background: #0b1d3a; border-color: #1e3a66;">
+                <i class="bi bi-card-heading"></i>
+              </span>
+              <input type="text" class="form-control" placeholder="Ej: 1718293847" pattern="[0-9]{10}" title="10 dígitos de cédula ecuatoriana" required />
+            </div>
+          </div>
+
+          <!-- Address / Sector -->
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-semibold text-slate-300">Sector / Manzana / Casa <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-slate-900 border-slate-700 text-slate-400" style="background: #0b1d3a; border-color: #1e3a66;">
+                <i class="bi bi-house-door-fill"></i>
+              </span>
+              <input type="text" class="form-control" placeholder="Ej: Pasaje El Jardín #142 (Manzana 4)" required />
+            </div>
+          </div>
+
+          <!-- Cell Phone (WhatsApp) -->
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-semibold text-slate-300">Teléfono Celular (WhatsApp) <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-slate-900 border-slate-700 text-slate-400" style="background: #0b1d3a; border-color: #1e3a66;">
+                <i class="bi bi-whatsapp text-success"></i>
+              </span>
+              <input type="tel" class="form-control" placeholder="Ej: 0991234567" required />
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-semibold text-slate-300">Correo Electrónico <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-slate-900 border-slate-700 text-slate-400" style="background: #0b1d3a; border-color: #1e3a66;">
+                <i class="bi bi-envelope-fill"></i>
+              </span>
+              <input type="email" class="form-control" placeholder="vecino@correo.com" required />
+            </div>
+          </div>
+
+          <!-- System Role Assignment -->
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-semibold text-slate-300">Rol de Acceso <span class="text-danger">*</span></label>
+            <select class="form-select" id="role-assign-select" required>
+              <option value="ciudadano" selected>👤 CIUDADANO (Acceso estándar a reporte y mapa)</option>
+              <option value="comite">🛡️ COMITÉ / STAFF (Acceso a gestión y cambios de estado)</option>
+            </select>
+          </div>
+
+          <!-- Initial Password Generation -->
+          <div class="col-12">
+            <label class="form-label small fw-semibold text-slate-300 d-flex align-items-center justify-content-between">
+              <span>Contraseña Inicial de Acceso <span class="text-danger">*</span></span>
+              <button type="button" class="btn btn-xs btn-outline-info rounded-pill px-2 py-0.5" id="generate-pass-btn">
+                <i class="bi bi-shuffle me-1"></i> Generar Clave Segura
+              </button>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-slate-900 border-slate-700 text-slate-400" style="background: #0b1d3a; border-color: #1e3a66;">
+                <i class="bi bi-key-fill text-warning"></i>
+              </span>
+              <input type="text" class="form-control font-monospace fw-bold text-warning" id="initial-pass-input" value="BarrioSeguro2026!" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- Notification Switch -->
+        <div class="form-check form-switch mb-4 p-3 rounded-3 border border-slate-700" style="background: rgba(15, 23, 42, 0.7); margin-left: 0;">
+          <input class="form-check-input ms-0 me-2" type="checkbox" id="send-credentials-check" checked />
+          <label class="form-check-label text-slate-200 small fw-semibold" for="send-credentials-check">
+            Enviar credenciales de acceso automáticamente por WhatsApp / SMS al vecino
+          </label>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="d-flex align-items-center justify-content-end gap-2">
+          <a href="/comite/reportes" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
+          <button type="submit" class="btn btn-success btn-lg rounded-pill px-5 fw-bold shadow">
+            <i class="bi bi-person-check-fill me-2"></i> Crear y Activar Cuenta Vecinal
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('generate-pass-btn').addEventListener('click', () => {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$';
+        let result = 'CS-';
+        for (let i = 0; i < 8; i++) {
+          result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        document.getElementById('initial-pass-input').value = result;
+      });
+
+      document.getElementById('create-user-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('¡Cuenta vecinal creada exitosamente! Se han enviado las credenciales al contacto registrado.');
+        window.location.href = '/comite/reportes';
+      });
+    });
+  </script>
+</BaseLayout>

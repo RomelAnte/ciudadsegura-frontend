@@ -1,0 +1,254 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { INCIDENT_CATEGORIES } from '../scripts/reportsData';
+
+const roleParam = Astro.url.searchParams.get('role') || 'ciudadano';
+const isComite = roleParam === 'comite';
+---
+
+<BaseLayout title="Crear Nuevo Reporte Comunitario" activeRole={isComite ? 'comite' : 'ciudadano'} activePage="reportar">
+  <div class="container py-3 max-w-4xl">
+    
+    <!-- Title & Instructions Banner -->
+    <div class="cg-card p-4 mb-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+          <span class="badge bg-primary text-white px-3 py-1 rounded-pill mb-2" style="font-size: 0.75rem;">
+            <i class="bi bi-shield-plus me-1"></i> NUEVA NOVEDAD VECINAL
+          </span>
+          <h1 class="h3 fw-bold text-white mb-1">Generar Reporte Comunitario</h1>
+          <p class="text-slate-300 small mb-0">Complete la información del incidente para que el Comité de Seguridad coordine la atención oportuna.</p>
+        </div>
+        <a href="/" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+          <i class="bi bi-arrow-left me-1"></i> Volver al Mapa
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Report Form Card -->
+    <div class="cg-card p-4 p-md-5">
+      <form id="create-report-form" action="/mis-reportes" method="GET">
+        
+        <!-- Step 1: Incident Category Selection Grid -->
+        <div class="mb-4">
+          <label class="form-label fw-bold text-white d-flex align-items-center gap-2 mb-3">
+            <span class="badge bg-primary rounded-circle" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;">1</span>
+            Seleccione el Tipo de Novedad / Incidente <span class="text-danger">*</span>
+          </label>
+
+          <div class="row g-2 id-categories-grid">
+            {INCIDENT_CATEGORIES.map((cat, idx) => (
+              <div class="col-6 col-sm-4 col-md-3">
+                <div class={`category-card-btn ${idx === 0 ? 'active' : ''}`} data-category-id={cat.id}>
+                  <i class={`bi ${cat.icon} fs-3`} style={`color: ${cat.color};`}></i>
+                  <span class="small font-semibold text-center" style="font-size: 0.8rem;">{cat.name}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <input type="hidden" name="category" id="selected-category-input" value="alumbrado" />
+        </div>
+
+        <!-- Step 2: Description Textarea -->
+        <div class="mb-4">
+          <label class="form-label fw-bold text-white d-flex align-items-center justify-content-between mb-2">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-primary rounded-circle" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;">2</span>
+              Descripción Detallada <span class="text-danger">*</span>
+            </div>
+            <span class="small text-slate-400 font-monospace" style="font-size: 0.75rem;" id="char-count">0 / 500</span>
+          </label>
+          <textarea 
+            class="form-control" 
+            name="description" 
+            id="description-input" 
+            rows="4" 
+            maxlength="500"
+            placeholder="Describa brevemente la novedad (ej: punto de referencia, tiempo transcurrido, detalles del problema)..."
+            required
+          >Luminaria principal apagada en el pasaje peatonal junto al parque infantil. Requiere revisión de la fotocélula.</textarea>
+        </div>
+
+        <!-- Step 3: GPS & Interactive Location Selector -->
+        <div class="mb-4">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+            <label class="form-label fw-bold text-white d-flex align-items-center gap-2 mb-0">
+              <span class="badge bg-primary rounded-circle" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;">3</span>
+              Ubicación Exacta en el Mapa <span class="text-danger">*</span>
+            </label>
+            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" id="use-gps-btn">
+              <i class="bi bi-crosshair me-1"></i> Usar mi ubicación GPS
+            </button>
+          </div>
+
+          <div class="input-group mb-2">
+            <span class="input-group-text bg-slate-900 border-slate-700 text-slate-400" style="background: #0b1d3a; border-color: #1e3a66;">
+              <i class="bi bi-geo-alt-fill text-danger"></i>
+            </span>
+            <input type="text" class="form-control" id="location-text-input" name="location" value="Av. República y Pasaje Eloy Alfaro (La Carolina, Quito)" required />
+          </div>
+
+          <div class="cg-card p-2 position-relative" style="height: 280px;">
+            <div id="leaflet-picker-map" class="rounded-3"></div>
+            <div class="position-absolute bottom-0 start-0 m-3 px-3 py-1.5 rounded-pill shadow" style="background: rgba(7, 19, 36, 0.9); border: 1px solid #1e3a66; font-size: 0.75rem; z-index: 1000;">
+              <i class="bi bi-info-circle me-1 text-info"></i> Haga clic en el mapa para ajustar la ubicación del reporte
+            </div>
+          </div>
+          <input type="hidden" id="lat-input" name="lat" value="-0.1807" />
+          <input type="hidden" id="lng-input" name="lng" value="-78.4678" />
+        </div>
+
+        <!-- Step 4: Optional Photo Upload Dropzone -->
+        <div class="mb-4">
+          <label class="form-label fw-bold text-white d-flex align-items-center justify-content-between mb-2">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-slate-700 rounded-circle" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;">4</span>
+              Fotografía de Evidencia <span class="badge bg-secondary ms-1">Opcional</span>
+            </div>
+          </label>
+
+          <div class="p-4 border-2 border-dashed rounded-3 text-center cursor-pointer position-relative" id="dropzone-container" style="background: rgba(11, 29, 58, 0.6); border: 2px dashed #1e3a66; border-radius: 12px;">
+            <input type="file" id="photo-upload-input" accept="image/*" class="position-absolute top-0 start-0 w-100 h-100 opacity-0 cursor-pointer" />
+            <div id="upload-prompt">
+              <i class="bi bi-cloud-arrow-up-fill fs-1 text-primary mb-2 d-block"></i>
+              <div class="fw-bold text-white mb-1">Haga clic o arrastre una foto aquí</div>
+              <div class="small text-slate-400">Formatos soportados: JPG, PNG, WEBP (Máx. 10MB)</div>
+            </div>
+            <div id="upload-preview" class="d-none text-center">
+              <img id="preview-img" src="" alt="Previsualización de foto" class="rounded-3 shadow mb-2" style="max-height: 180px; object-fit: cover;" />
+              <div class="small text-emerald-400 fw-bold" id="file-name-label">foto_incidente.jpg</div>
+              <button type="button" class="btn btn-xs btn-outline-danger mt-2 rounded-pill px-3" id="remove-photo-btn">
+                <i class="bi bi-trash me-1"></i> Eliminar foto
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Privacy & Modification Window Notice -->
+        <div class="alert alert-dark border border-slate-700 rounded-3 mb-4 p-3" style="background: rgba(15, 23, 42, 0.8);">
+          <div class="d-flex align-items-start gap-3">
+            <i class="bi bi-shield-check text-success fs-4 flex-shrink-0"></i>
+            <div class="small text-slate-300" style="font-size: 0.8rem;">
+              <strong class="text-white d-block">Protección de Privacidad Vecinal & Edición:</strong>
+              Su nombre <strong class="text-warning">NUNCA</strong> aparecerá en el mapa público ni será visible para otros usuarios. Podrá editar o eliminar este reporte únicamente dentro de las <strong class="text-info">3 horas posteriores a su envío</strong>.
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="d-flex align-items-center justify-content-end gap-2">
+          <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
+          <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow">
+            <i class="bi bi-send-fill me-2"></i> Enviar Reporte al Comité
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Category selection grid interaction
+      const categoryBtns = document.querySelectorAll('.category-card-btn');
+      const categoryInput = document.getElementById('selected-category-input');
+
+      categoryBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          categoryBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          categoryInput.value = btn.dataset.categoryId;
+        });
+      });
+
+      // Character count logic
+      const descInput = document.getElementById('description-input');
+      const charCount = document.getElementById('char-count');
+      descInput.addEventListener('input', () => {
+        charCount.textContent = `${descInput.value.length} / 500`;
+      });
+
+      // Photo upload preview
+      const photoInput = document.getElementById('photo-upload-input');
+      const promptDiv = document.getElementById('upload-prompt');
+      const previewDiv = document.getElementById('upload-preview');
+      const previewImg = document.getElementById('preview-img');
+      const fileNameLabel = document.getElementById('file-name-label');
+      const removeBtn = document.getElementById('remove-photo-btn');
+
+      photoInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            previewImg.src = evt.target.result;
+            fileNameLabel.textContent = file.name;
+            promptDiv.classList.add('d-none');
+            previewDiv.classList.remove('d-none');
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        photoInput.value = '';
+        previewImg.src = '';
+        promptDiv.classList.remove('d-none');
+        previewDiv.classList.add('d-none');
+      });
+
+      // Leaflet Map Location Selector Picker
+      if (typeof L !== 'undefined') {
+        const defaultLat = -0.1807;
+        const defaultLng = -78.4678;
+
+        const pickerMap = L.map('leaflet-picker-map', {
+          center: [defaultLat, defaultLng],
+          zoom: 15,
+          zoomControl: true
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          maxZoom: 19
+        }).addTo(pickerMap);
+
+        let currentMarker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(pickerMap);
+
+        function updateCoords(lat, lng) {
+          document.getElementById('lat-input').value = lat.toFixed(5);
+          document.getElementById('lng-input').value = lng.toFixed(5);
+        }
+
+        currentMarker.on('dragend', (e) => {
+          const pos = e.target.getLatLng();
+          updateCoords(pos.lat, pos.lng);
+        });
+
+        pickerMap.on('click', (e) => {
+          currentMarker.setLatLng(e.latlng);
+          updateCoords(e.latlng.lat, e.latlng.lng);
+        });
+
+        document.getElementById('use-gps-btn').addEventListener('click', () => {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                pickerMap.setView([lat, lng], 16);
+                currentMarker.setLatLng([lat, lng]);
+                updateCoords(lat, lng);
+                document.getElementById('location-text-input').value = `Ubicación GPS (Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)})`;
+              },
+              () => {
+                alert('No se pudo obtener la geolocalización GPS. Se mantiene la ubicación seleccionada en Quito.');
+              }
+            );
+          }
+        });
+      }
+    });
+  </script>
+</BaseLayout>

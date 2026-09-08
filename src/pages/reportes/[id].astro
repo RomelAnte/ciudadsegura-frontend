@@ -1,0 +1,187 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { INITIAL_REPORTS, REPORT_STATUSES, getReportWindowStatus } from '../../scripts/reportsData';
+
+const { id } = Astro.params;
+const roleParam = Astro.url.searchParams.get('role') || 'ciudadano';
+const isComite = roleParam === 'comite';
+
+// Find report or fallback to first report
+const report = INITIAL_REPORTS.find(r => r.id === id) || INITIAL_REPORTS[0];
+const statusInfo = REPORT_STATUSES[report.status] || REPORT_STATUSES.PENDIENTE;
+const windowStatus = getReportWindowStatus(report.createdAt, report.userId);
+---
+
+<BaseLayout title={`Detalle ${report.code} - Ciudad Segura`} activeRole={isComite ? 'comite' : 'ciudadano'} activePage="mapa">
+  <div class="container py-3 max-w-4xl">
+    
+    <!-- Top Action Nav -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <a href={isComite ? '/comite/reportes' : '/'} class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+        <i class="bi bi-arrow-left me-1"></i> {isComite ? 'Volver al Panel Comité' : 'Volver al Mapa'}
+      </a>
+      <div class="d-flex align-items-center gap-2">
+        <span class={`badge ${statusInfo.badgeClass} px-3 py-1.5 rounded-pill fs-6`}>
+          <i class={`bi ${statusInfo.icon} me-1`}></i> {statusInfo.label}
+        </span>
+      </div>
+    </div>
+
+    <!-- 3-Hour Modification Window Alert Banner (Owner View) -->
+    {windowStatus.isOwner && (
+      <div class={`alert border rounded-3 mb-4 p-3 ${windowStatus.canModify ? 'border-warning bg-dark text-warning' : 'border-slate-700 bg-dark text-slate-400'}`} style={windowStatus.canModify ? 'background: rgba(245, 158, 11, 0.1) !important;' : 'background: rgba(15, 23, 42, 0.8) !important;'}>
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <i class={`bi ${windowStatus.canModify ? 'bi-clock-history text-warning fs-4' : 'bi-lock-fill text-slate-500 fs-4'}`}></i>
+            <div>
+              <strong class="d-block text-white">Ventana de Edición Vecinal (3 Horas):</strong>
+              <span class="small">{windowStatus.formattedTime}</span>
+            </div>
+          </div>
+
+          <!-- Active Edit/Delete Actions inside 3h window -->
+          {windowStatus.canModify ? (
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-warning text-dark font-bold rounded-pill px-3" onclick="alert('Formulario de edición activado dentro de la ventana de 3 horas.');">
+                <i class="bi bi-pencil-square me-1"></i> Editar Reporte
+              </button>
+              <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="if(confirm('¿Está seguro de eliminar su reporte de la red vecinal?')) { window.location.href='/mis-reportes'; }">
+                <i class="bi bi-trash me-1"></i> Eliminar
+              </button>
+            </div>
+          ) : (
+            <span class="badge bg-slate-800 text-slate-400 border border-slate-700 rounded-pill px-3 py-1.5" style="font-size: 0.75rem;">
+              <i class="bi bi-shield-lock me-1"></i> Edición Deshabilitada (Expirada)
+            </span>
+          )}
+        </div>
+      </div>
+    )}
+
+    <!-- Main Detail Card Grid -->
+    <div class="row g-3">
+      
+      <!-- Left Column: Report Info & Evidence -->
+      <div class="col-12 col-md-7">
+        <div class="cg-card p-4 h-100">
+          <div class="d-flex align-items-center justify-content-between border-bottom pb-3 mb-3" style="border-color: #1e3a66 !important;">
+            <div>
+              <span class="small text-slate-400 font-monospace" style="font-size: 0.75rem;">CÓDIGO OFICIAL</span>
+              <h2 class="h4 fw-bold text-white mb-0">{report.code}</h2>
+            </div>
+            <span class="badge bg-slate-800 text-info border border-info border-opacity-25 px-3 py-1 rounded-pill">
+              <i class="bi bi-tag-fill me-1"></i> {report.categoryName}
+            </span>
+          </div>
+
+          <h3 class="h5 fw-bold text-white mb-2">{report.title}</h3>
+          <p class="text-slate-300 small mb-4" style="line-height: 1.6; color: #cbd5e1;">
+            {report.description}
+          </p>
+
+          <!-- Location Info -->
+          <div class="p-3 rounded-3 mb-4" style="background: rgba(15, 23, 42, 0.7); border: 1px solid #1e3a66;">
+            <div class="small text-slate-400 font-monospace mb-1" style="font-size: 0.7rem;">UBICACIÓN REGISTRADA</div>
+            <div class="d-flex align-items-center gap-2 text-white font-semibold">
+              <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
+              <span>{report.locationName}</span>
+            </div>
+          </div>
+
+          <!-- Evidence Photo Box -->
+          {report.imageUrl ? (
+            <div class="mb-3">
+              <div class="small text-slate-400 font-monospace mb-2" style="font-size: 0.7rem;">EVIDENCIA FOTOGRÁFICA</div>
+              <div class="position-relative overflow-hidden rounded-3 border" style="border-color: #1e3a66;">
+                <img src={report.imageUrl} alt="Evidencia de incidente" class="w-100 object-cover" style="max-height: 260px;" />
+                <div class="position-absolute bottom-0 end-0 m-2">
+                  <a href={report.imageUrl} target="_blank" class="btn btn-sm btn-dark bg-opacity-75 rounded-pill px-3 py-1 text-white" style="font-size: 0.75rem;">
+                    <i class="bi bi-zoom-in me-1"></i> Ver imagen completa
+                  </a>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div class="p-3 rounded-3 text-center border border-dashed mb-3 text-slate-400" style="border-color: #1e3a66;">
+              <i class="bi bi-camera-slash fs-4 d-block mb-1"></i>
+              <span class="small">El reporte fue enviado sin foto adjunta.</span>
+            </div>
+          )}
+
+          <!-- Anonymity Notice -->
+          <div class="alert alert-dark border border-slate-700 py-2 px-3 mb-0" style="background: rgba(11, 29, 58, 0.8);">
+            <div class="small text-slate-300" style="font-size: 0.75rem;">
+              <i class="bi bi-incognito text-primary me-1"></i> <strong>Anonimato Comunitario:</strong> Los datos de identidad del autor están protegidos por el protocolo del Comité de Seguridad.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Right Column: Static Map & Audit Timeline -->
+      <div class="col-12 col-md-5">
+        <div class="d-flex flex-column gap-3 h-100">
+          
+          <!-- Static Location Leaflet Map -->
+          <div class="cg-card p-2" style="height: 220px;">
+            <div id="leaflet-detail-map" class="rounded-3"></div>
+          </div>
+
+          <!-- Timeline Audit Card -->
+          <div class="cg-card p-4 flex-grow-1">
+            <h4 class="h6 fw-bold text-white mb-3 d-flex align-items-center gap-2">
+              <i class="bi bi-clock-history text-info"></i> Historial de Seguimiento
+            </h4>
+
+            <div class="position-relative ps-3 border-start" style="border-color: #1e3a66 !important;">
+              {report.timeline.map((item, idx) => (
+                <div class="mb-3 position-relative">
+                  <div class="position-absolute top-0 start-0 translate-middle rounded-circle bg-primary" style="width: 10px; height: 10px; left: -1px !important;"></div>
+                  <div class="d-flex align-items-center justify-content-between mb-1">
+                    <span class="badge bg-slate-800 text-info border border-info border-opacity-25" style="font-size: 0.65rem;">
+                      {item.status}
+                    </span>
+                    <span class="small text-slate-400 font-monospace" style="font-size: 0.7rem;">Recent</span>
+                  </div>
+                  <p class="small text-slate-300 mb-0" style="font-size: 0.8rem;">{item.note}</p>
+                </div>
+              ))}
+            </div>
+
+            {isComite && (
+              <div class="mt-3 pt-3 border-top" style="border-color: #1e3a66 !important;">
+                <button class="btn btn-sm btn-danger w-100 rounded-pill py-2 font-semibold" onclick={`window.location.href='/comite/reportes?highlight=${report.id}'`}>
+                  <i class="bi bi-shield-shaded me-1"></i> Gestionar Estado (Panel Comité)
+                </button>
+              </div>
+            )}
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Detail Map Loader Script -->
+  <script is:inline define:vars={{ lat: report.lat, lng: report.lng, title: report.title }}>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof L !== 'undefined') {
+        const detailMap = L.map('leaflet-detail-map', {
+          center: [lat, lng],
+          zoom: 16,
+          zoomControl: false,
+          dragging: false,
+          scrollWheelZoom: false
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          maxZoom: 19
+        }).addTo(detailMap);
+
+        L.marker([lat, lng]).addTo(detailMap).bindPopup(title).openPopup();
+      }
+    });
+  </script>
+</BaseLayout>

@@ -1,0 +1,93 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Acceso al Sistema - Ciudad Segura" activePage="login">
+  <div class="container py-4 py-md-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-5">
+        
+        <!-- Institutional Badge Header -->
+        <div class="text-center mb-4">
+          <div class="d-inline-flex p-3 rounded-circle bg-primary bg-gradient text-white shadow-lg mb-3" style="width: 70px; height: 70px; align-items: center; justify-content: center;">
+            <i class="bi bi-shield-lock-fill fs-1"></i>
+          </div>
+          <h1 class="h3 fw-bold text-white mb-1">CIUDAD SEGURA</h1>
+          <p class="text-slate-400 small mb-0">Red Comunitaria de Alerta Temprana del Barrio</p>
+          <span class="badge bg-slate-800 text-info border border-info border-opacity-25 mt-2 px-3 py-1 rounded-pill">
+            <i class="bi bi-geo-alt me-1"></i>La Carolina - Quito, Ecuador
+          </span>
+        </div>
+
+        <!-- Login Card -->
+        <div class="cg-card p-4 p-md-5 shadow-2xl">
+          <h2 class="h5 fw-bold text-white mb-3 text-center">Iniciar Sesión</h2>
+          
+          <div class="alert alert-dark border border-warning border-opacity-25 rounded-3 mb-4 p-3" style="background: rgba(245, 158, 11, 0.08);">
+            <div class="d-flex align-items-start gap-2">
+              <i class="bi bi-info-circle-fill text-warning fs-5 flex-shrink-0 mt-1"></i>
+              <div class="small text-amber-200" style="color: #fef08a; font-size: 0.8rem;">
+                <strong class="text-white d-block">Acceso Privado Vecinal:</strong> No hay autorregistro público. Las cuentas son generadas por la directiva del Comité de Seguridad.
+              </div>
+            </div>
+          </div>
+
+          <form action="/" method="GET" class="d-flex flex-column gap-3">
+            <div>
+              <label class="form-label small fw-semibold text-slate-300">Correo Electrónico o Cédula</label>
+              <div class="input-group">
+                <span class="input-group-text border-slate-700 text-slate-400" style="background: #0b1d3a; border-color: #1e3a66;">
+                  <i class="bi bi-person-fill"></i>
+                </span>
+                <input type="email" class="form-control" placeholder="vecino@barrio.ec" value="carlos.andrade@barrio.ec" required />
+              </div>
+            </div>
+
+            <div>
+              <label class="form-label small fw-semibold text-slate-300">Contraseña Asignada</label>
+              <div class="input-group">
+                <span class="input-group-text border-slate-700 text-slate-400" style="background: #0b1d3a; border-color: #1e3a66;">
+                  <i class="bi bi-lock-fill"></i>
+                </span>
+                <input type="password" class="form-control" value="••••••••••••" required />
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center small">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="remember" checked />
+                <label class="form-check-label text-slate-400" for="remember">Recordar sesión</label>
+              </div>
+              <a href="#" class="text-primary text-decoration-none" onclick="alert('Por favor solicite el restablecimiento de su clave directamente a un miembro del Comité de Seguridad del Barrio.'); return false;">
+                ¿Olvidó su clave?
+              </a>
+            </div>
+
+            <button type="submit" class="btn btn-primary py-2.5 fw-bold rounded-3 shadow mt-2">
+              <i class="bi bi-box-arrow-in-right me-1"></i> Ingresar a la Plataforma
+            </button>
+          </form>
+
+          <hr class="my-4 border-slate-700" style="border-color: #1e3a66;" />
+
+          <!-- Demo Quick Roles Section -->
+          <div class="text-center">
+            <span class="small text-slate-400 d-block mb-2 font-monospace" style="font-size: 0.75rem;">PRUEBA RÁPIDA DE ROLES (DEMO)</span>
+            <div class="d-grid gap-2">
+              <a href="/?role=ciudadano" class="btn btn-outline-info btn-sm text-start d-flex align-items-center justify-content-between px-3 py-2">
+                <span><i class="bi bi-person-circle me-2"></i>Entrar como <strong>Ciudadano</strong></span>
+                <i class="bi bi-arrow-right"></i>
+              </a>
+              <a href="/?role=comite" class="btn btn-outline-danger btn-sm text-start d-flex align-items-center justify-content-between px-3 py-2">
+                <span><i class="bi bi-shield-shaded me-2"></i>Entrar como <strong>Comité (is_staff)</strong></span>
+                <i class="bi bi-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</BaseLayout>

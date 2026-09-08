@@ -1,53 +1,382 @@
 ---
-/*Importar Bootstrap */
-import 'bootstrap/dist/css/bootstrap.min.css';
-
-/* Importar iconos de Bootstrap Icons */
-import 'bootstrap-icons/font/bootstrap-icons.css';
-
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { INITIAL_REPORTS, INCIDENT_CATEGORIES, REPORT_STATUSES } from '../scripts/reportsData';
+
+const roleParam = Astro.url.searchParams.get('role') || 'ciudadano';
+const isComite = roleParam === 'comite';
 ---
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ciudad Segura</title>
-</head>
-<body>
-    <BaseLayout>
-        <div class="row">
-            <div class="col-md-12 card p-4 mb-4 rounded-5" style="background-color: #f8f9fa; border-radius: 10px;">
-                <h1>Ciudad Segura</h1>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-            </div>
+
+<BaseLayout title="Mapa de Incidentes" activeRole={isComite ? 'comite' : 'ciudadano'} activePage="mapa">
+  <div class="container-fluid py-2">
+    
+    <!-- Hero Command Center Banner -->
+    <div class="cg-card p-3 p-md-4 mb-4 position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(11, 29, 58, 0.95), rgba(17, 38, 71, 0.9));">
+      <div class="row align-items-center gy-3">
+        <div class="col-12 col-lg-7">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class={`badge ${isComite ? 'bg-danger text-white' : 'bg-primary text-white'} px-3 py-1 rounded-pill`} style="font-size: 0.75rem;">
+              <i class={`bi ${isComite ? 'bi-shield-shaded' : 'bi-person-circle'} me-1`}></i>
+              {isComite ? 'CENTRO DE COMANDO DIGITAL (COMITÉ)' : 'RED DE ALERTA COMUNITARIA (CIUDADANO)'}
+            </span>
+            <span class="text-slate-400 small d-none d-sm-inline">• Quito Sector La Carolina</span>
+          </div>
+          <h1 class="h3 fw-extrabold text-white mb-2">
+            {isComite ? 'Monitoreo y Gestión Territorial de Incidentes' : 'Tu participación fortalece la seguridad de tu comunidad'}
+          </h1>
+          <p class="text-slate-300 small mb-0 max-w-2xl" style="color: #cbd5e1;">
+            {isComite 
+              ? 'Panel de control del Comité de Seguridad. Visualice, filtre y actualice el estado de los reportes emitidos por los vecinos.' 
+              : 'Consulte en tiempo real las novedades reportadas por los vecinos del barrio. Juntos mantenemos nuestro sector iluminado, ordenado y seguro.'}
+          </p>
         </div>
-        <div class="row">
-            <div class="col-md-8 card p-4 mb-4 rounded-5" style="background-color: #f8f9fa; border-radius: 10px;">
-                <h2>Sección 1</h2>
-                <p>Contenido de la sección 1.</p>
+
+        <div class="col-12 col-lg-5">
+          <!-- Stat Cards Grid -->
+          <div class="row g-2">
+            <div class="col-6 col-sm-3 col-lg-6">
+              <div class="p-2.5 rounded-3 border" style="background: rgba(15, 23, 42, 0.6); border-color: #1e3a66 !important;">
+                <div class="small text-slate-400" style="font-size: 0.7rem;">TOTAL REPORTES</div>
+                <div class="h4 mb-0 fw-bold text-white font-monospace" id="stat-total">5</div>
+              </div>
             </div>
-            <div class="col-md-4 card p-4 mb-4 rounded-5" style="background-color: #f8f9fa; border-radius: 10px;">
-                <h2>Sección 2</h2>
-                <p>Contenido de la sección 2.</p>
+            <div class="col-6 col-sm-3 col-lg-6">
+              <div class="p-2.5 rounded-3 border" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3) !important;">
+                <div class="small text-amber-400" style="font-size: 0.7rem; color: #fbbf24;">PENDIENTES</div>
+                <div class="h4 mb-0 fw-bold text-amber-400 font-monospace" style="color: #fbbf24;" id="stat-pending">2</div>
+              </div>
             </div>
+            <div class="col-6 col-sm-3 col-lg-6">
+              <div class="p-2.5 rounded-3 border" style="background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3) !important;">
+                <div class="small text-blue-400" style="font-size: 0.7rem; color: #60a5fa;">EN REVISIÓN</div>
+                <div class="h4 mb-0 fw-bold text-blue-400 font-monospace" style="color: #60a5fa;" id="stat-progress">1</div>
+              </div>
+            </div>
+            <div class="col-6 col-sm-3 col-lg-6">
+              <div class="p-2.5 rounded-3 border" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3) !important;">
+                <div class="small text-emerald-400" style="font-size: 0.7rem; color: #34d399;">ATENDIDOS</div>
+                <div class="h4 mb-0 fw-bold text-emerald-400 font-monospace" style="color: #34d399;" id="stat-resolved">2</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="row">
-            <div class="col-md-3 card p-4 mb-4 rounded-5" style="background-color: #f8f9fa; border-radius: 10px;">
-                <h2>Sección 3</h2>
-                <p>Contenido de la sección 3.</p>
-            </div>
-            <div class="col-md-9 card p-4 mb-4 rounded-5" style="background-color: #f8f9fa; border-radius: 10px;">
-                <h2>Sección 4</h2>
-                <p>Contenido de la sección 4.</p>
-            </div>
+      </div>
+    </div>
+
+    <!-- Category Filter Bar & Committee Status Controls -->
+    <div class="row mb-3 gy-2 align-items-center">
+      <div class="col-12 col-md-8">
+        <div class="d-flex align-items-center gap-2 overflow-x-auto pb-1" id="category-filters-container">
+          <button class="btn btn-sm btn-primary px-3 rounded-pill flex-shrink-0 category-filter-btn active" data-category="all">
+            <i class="bi bi-grid-fill me-1"></i> Todos los tipos
+          </button>
+          {INCIDENT_CATEGORIES.map(cat => (
+            <button class="btn btn-sm btn-outline-secondary px-3 rounded-pill flex-shrink-0 category-filter-btn text-slate-200" style="border-color: #1e3a66;" data-category={cat.id}>
+              <i class={`bi ${cat.icon} me-1`} style={`color: ${cat.color};`}></i> {cat.name}
+            </button>
+          ))}
         </div>
-        <div class="row">
-            <div class="col-md-12 card p-4 mb-4 rounded-5" style="background-color: #f8f9fa; border-radius: 10px;">
-                <h2>Sección 5</h2>
-                <p>Contenido de la sección 5.</p>
-            </div>
+      </div>
+
+      <div class="col-12 col-md-4 d-flex justify-content-start justify-content-md-end gap-2">
+        {isComite ? (
+          <div class="dropdown">
+            <button class="btn btn-sm btn-danger dropdown-toggle rounded-pill px-3 shadow-sm" type="button" data-bs-toggle="dropdown">
+              <i class="bi bi-funnel-fill me-1"></i> Filtrar Estado (Comité)
+            </button>
+            <ul class="dropdown-menu dropdown-menu-dark shadow" style="background: #0f172a; border-color: #1e3a66;">
+              <li><a class="dropdown-item status-filter-item active" href="#" data-status="all">Mostrar Todos</a></li>
+              <li><a class="dropdown-item status-filter-item text-warning" href="#" data-status="PENDIENTE"><i class="bi bi-clock-history me-1"></i> Solo Pendientes</a></li>
+              <li><a class="dropdown-item status-filter-item text-info" href="#" data-status="EN_PROCESO"><i class="bi bi-gear-wide-connected me-1"></i> Solo En Revisión</a></li>
+              <li><a class="dropdown-item status-filter-item text-success" href="#" data-status="ATENDIDO"><i class="bi bi-check-circle-fill me-1"></i> Solo Atendidos</a></li>
+            </ul>
+          </div>
+        ) : (
+          <a href="/reportar" class="btn btn-sm btn-primary rounded-pill px-4 shadow d-none d-md-inline-flex align-items-center gap-1">
+            <i class="bi bi-plus-lg"></i> Crear Reporte
+          </a>
+        )}
+      </div>
+    </div>
+
+    <!-- Main Content Grid (Map + Side Panel) -->
+    <div class="row g-3">
+      
+      <!-- Leaflet Map Container -->
+      <div class="col-12 col-lg-8">
+        <div class="cg-card p-2 position-relative" style="height: 520px;">
+          <div id="leaflet-main-map" class="rounded-3"></div>
+
+          <!-- Map Floating Legend -->
+          <div class="position-absolute bottom-0 start-0 m-3 p-2 rounded-3 shadow-lg d-none d-sm-flex align-items-center gap-3" style="background: rgba(7, 19, 36, 0.9); backdrop-filter: blur(8px); border: 1px solid #1e3a66; z-index: 1000; font-size: 0.75rem;">
+            <div class="d-flex align-items-center gap-1"><span class="badge bg-warning p-1 rounded-circle" style="width: 10px; height: 10px;"></span> Pendiente</div>
+            <div class="d-flex align-items-center gap-1"><span class="badge bg-info p-1 rounded-circle" style="width: 10px; height: 10px;"></span> En Revisión</div>
+            <div class="d-flex align-items-center gap-1"><span class="badge bg-success p-1 rounded-circle" style="width: 10px; height: 10px;"></span> Atendido</div>
+          </div>
         </div>
-    </BaseLayout>
-</body>
-</html>
+      </div>
+
+      <!-- Incident Quick List Side Panel -->
+      <div class="col-12 col-lg-4">
+        <div class="cg-card h-100 p-3 d-flex flex-direction-column">
+          <div class="d-flex align-items-center justify-content-between pb-2 mb-2 border-bottom" style="border-color: #1e3a66 !important;">
+            <h2 class="h6 fw-bold text-white mb-0">
+              <i class="bi bi-list-stars me-1 text-primary"></i> Incidentes Recientes
+            </h2>
+            <span class="badge bg-slate-800 text-slate-300 font-monospace" style="font-size: 0.7rem;" id="filtered-count">5 reportes</span>
+          </div>
+
+          <div class="flex-grow-1 overflow-y-autoPe" style="max-height: 440px;" id="incidents-sidebar-list">
+            <!-- Dynamically populated incident cards -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Mobile Floating Action Button (FAB) for Report Creation -->
+  <div class="position-fixed bottom-0 end-0 m-4 d-md-none" style="z-index: 1050; margin-bottom: 75px !important;">
+    <a href="/reportar" class="cg-fab-btn" title="Crear Reporte">
+      <i class="bi bi-plus-lg"></i>
+    </a>
+  </div>
+
+  <!-- Committee Quick Status Change Modal -->
+  <div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="background: #0f172a; border: 1px solid #1e3a66; color: #f8fafc;">
+        <div class="modal-header border-slate-700" style="border-color: #1e3a66 !important;">
+          <h5 class="modal-title h6 fw-bold text-white d-flex align-items-center gap-2">
+            <i class="bi bi-shield-shaded text-danger"></i> Cambiar Estado del Reporte (Comité)
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-slate-300 mb-2">Seleccione el nuevo estado para <strong id="modal-report-code" class="text-white">REP-101</strong>:</p>
+          <div class="mb-3">
+            <label class="form-label small text-slate-400">Nuevo Estado</label>
+            <select class="form-select" id="modal-status-select">
+              <option value="PENDIENTE">🟧 PENDIENTE (En espera de atención)</option>
+              <option value="EN_PROCESO">🟦 EN REVISIÓN (Comité / Guardia coordinando)</option>
+              <option value="ATENDIDO">🟩 ATENDIDO (Novedad resuelta)</option>
+              <option value="ARCHIVADO">⬛ ARCHIVADO (Cerrado)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-slate-400">Nota de Seguimiento del Comité (Opcional)</label>
+            <textarea class="form-control" id="modal-status-note" rows="2" placeholder="Ej: Se comunicó con la cuadrilla municipal de alumbrado público."></textarea>
+          </div>
+          <div class="alert alert-dark border border-info border-opacity-25 rounded-3 py-2 px-3 mb-0" style="background: rgba(59, 130, 246, 0.1);">
+            <div class="small text-info" style="font-size: 0.75rem;">
+              <i class="bi bi-shield-lock me-1"></i> El anonimato del autor se mantiene protegido en los registros del sistema.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-slate-700" style="border-color: #1e3a66 !important;">
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-sm btn-success rounded-pill px-4" id="save-status-btn">Guardar Cambios</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client side map & data initialization script -->
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Mock data from reportsData.js
+      const reports = [
+        {
+          id: 'REP-101', code: 'REP-2026-101', category: 'alumbrado', categoryName: 'Alumbrado Público',
+          title: 'Luminaria principal apagada en pasaje peatonal', description: 'La luminaria poste #45 se apaga intermitentemente desde anoche.',
+          lat: -0.1807, lng: -78.4678, locationName: 'Av. República y Pasaje Eloy Alfaro (La Carolina)',
+          status: 'PENDIENTE', createdAt: '1 hora atrás', imageUrl: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=600&q=80'
+        },
+        {
+          id: 'REP-102', code: 'REP-2026-102', category: 'sospechoso', categoryName: 'Actividad Sospechosa',
+          title: 'Vehículo oscuro estacionado sin placas cerca al portón', description: 'Automóvil sedan plomo estacionado con 2 ocupantes encendidos por más de 45m.',
+          lat: -0.1782, lng: -78.4750, locationName: 'Calle Rumipamba y Av. Amazonas',
+          status: 'EN_PROCESO', createdAt: '4 horas atrás', imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=600&q=80'
+        },
+        {
+          id: 'REP-103', code: 'REP-2026-103', category: 'basura', categoryName: 'Acumulación de Basura',
+          title: 'Desechos de poda acumulados obstruyendo la acera', description: 'Fueron dejados sacos de restos vegetales en la acera.',
+          lat: -0.1850, lng: -78.4600, locationName: 'Av. González Suárez y Coruña',
+          status: 'ATENDIDO', createdAt: '14 horas atrás', imageUrl: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=600&q=80'
+        },
+        {
+          id: 'REP-104', code: 'REP-2026-104', category: 'ruido', categoryName: 'Ruido Excesivo / Fiesta',
+          title: 'Música a alto volumen en inmueble deshabitado', description: 'Ruido molesto afectando el descanso del sector durante la madrugada.',
+          lat: -0.1820, lng: -78.4710, locationName: 'Pasaje El Jardín #142',
+          status: 'PENDIENTE', createdAt: '2 horas atrás', imageUrl: null
+        },
+        {
+          id: 'REP-105', code: 'REP-2026-105', category: 'vandalismo', categoryName: 'Grafiti / Vandalismo',
+          title: 'Manchado de pintura en pared posterior de la casa comunal', description: 'Pintas recientes realizadas durante el fin de semana.',
+          lat: -0.1750, lng: -78.4820, locationName: 'Calle Batán Alto y Shyris',
+          status: 'ATENDIDO', createdAt: '1 día atrás', imageUrl: 'https://images.unsplash.com/photo-1572949645841-094f3a9c4c94?auto=format&fit=crop&w=600&q=80'
+        }
+      ];
+
+      const isComite = new URLSearchParams(window.location.search).get('role') === 'comite';
+      let activeCategory = 'all';
+      let activeStatus = 'all';
+      let selectedReportId = null;
+
+      // Initialize Leaflet Map centered in Quito
+      if (typeof L !== 'undefined') {
+        const map = L.map('leaflet-main-map', {
+          center: [-0.1807, -78.4678],
+          zoom: 14,
+          zoomControl: true
+        });
+
+        // Dark tile layer for institutional aesthetic
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; OpenStreetMap &copy; CARTO',
+          maxZoom: 19
+        }).addTo(map);
+
+        const markersGroup = L.layerGroup().addTo(map);
+
+        function getStatusColor(status) {
+          if (status === 'PENDIENTE') return '#f59e0b';
+          if (status === 'EN_PROCESO') return '#3b82f6';
+          if (status === 'ATENDIDO') return '#10b981';
+          return '#64748b';
+        }
+
+        function renderMapAndList() {
+          markersGroup.clearLayers();
+          const sidebarContainer = document.getElementById('incidents-sidebar-list');
+          sidebarContainer.innerHTML = '';
+
+          const filtered = reports.filter(r => {
+            const matchesCat = activeCategory === 'all' || r.category === activeCategory;
+            const matchesStat = activeStatus === 'all' || r.status === activeStatus;
+            return matchesCat && matchesStat;
+          });
+
+          document.getElementById('filtered-count').textContent = `${filtered.length} reportes`;
+
+          filtered.forEach(r => {
+            const color = getStatusColor(r.status);
+
+            // Custom Leaflet Marker Icon
+            const customIcon = L.divIcon({
+              className: 'custom-leaflet-pin',
+              html: `<div style="background-color: ${color}; width: 26px; height: 26px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 0 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: white;">
+                      <i class="bi bi-geo-alt-fill" style="font-size: 14px;"></i>
+                    </div>`,
+              iconSize: [26, 26],
+              iconAnchor: [13, 13]
+            });
+
+            const marker = L.marker([r.lat, r.lng], { icon: customIcon }).addTo(markersGroup);
+
+            // Popup content strictly complying with anonymity (No Author displayed!)
+            const popupHtml = `
+              <div style="min-width: 220px; font-family: system-ui;">
+                <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                  <span class="badge" style="background-color: ${color}; font-size: 0.65rem;">${r.status}</span>
+                  <span class="small text-slate-400" style="font-size: 0.7rem;">${r.code}</span>
+                </div>
+                <strong style="font-size: 0.85rem; color: #ffffff; display: block; margin-bottom: 4px;">${r.title}</strong>
+                <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 8px;">
+                  <i class="bi bi-geo-alt me-1"></i>${r.locationName}
+                </div>
+                <div class="d-flex gap-1 mt-2">
+                  <a href="/reportes/${r.id}?role=${isComite ? 'comite' : 'ciudadano'}" class="btn btn-xs btn-primary w-100 rounded-pill py-1" style="font-size: 0.75rem;">Ver Detalle</a>
+                  ${isComite ? `<button onclick="window.openStatusModal('${r.id}')" class="btn btn-xs btn-danger w-100 rounded-pill py-1" style="font-size: 0.75rem;">Estado</button>` : ''}
+                </div>
+              </div>
+            `;
+
+            marker.bindPopup(popupHtml);
+
+            // Create Sidebar Card
+            const card = document.createElement('div');
+            card.className = 'p-3 rounded-3 mb-2 border cg-card-hover cursor-pointer';
+            card.style.background = 'rgba(15, 23, 42, 0.7)';
+            card.style.borderColor = '#1e3a66';
+
+            card.innerHTML = `
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="badge" style="background-color: ${color}20; color: ${color}; border: 1px solid ${color}40; font-size: 0.65rem;">
+                  ${r.status}
+                </span>
+                <span class="small text-slate-400 font-monospace" style="font-size: 0.7rem;">${r.code}</span>
+              </div>
+              <h6 class="fw-bold text-white mb-1" style="font-size: 0.85rem;">${r.title}</h6>
+              <div class="small text-slate-300 mb-2" style="font-size: 0.75rem; color: #94a3b8;">
+                <i class="bi bi-geo-alt me-1 text-danger"></i>${r.locationName}
+              </div>
+              <div class="d-flex align-items-center justify-content-between small text-slate-400" style="font-size: 0.7rem;">
+                <span><i class="bi bi-clock me-1"></i>${r.createdAt}</span>
+                <a href="/reportes/${r.id}?role=${isComite ? 'comite' : 'ciudadano'}" class="text-primary text-decoration-none fw-semibold">
+                  Ver Novedad <i class="bi bi-arrow-right"></i>
+                </a>
+              </div>
+            `;
+
+            card.addEventListener('click', () => {
+              map.setView([r.lat, r.lng], 16, { animate: true });
+              marker.openPopup();
+            });
+
+            sidebarContainer.appendChild(card);
+          });
+        }
+
+        renderMapAndList();
+
+        // Category filter click handler
+        document.querySelectorAll('.category-filter-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active', 'btn-primary'));
+            btn.classList.add('active', 'btn-primary');
+            activeCategory = btn.dataset.category;
+            renderMapAndList();
+          });
+        });
+
+        // Status filter click handler for Committee
+        document.querySelectorAll('.status-filter-item').forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.preventDefault();
+            activeStatus = item.dataset.status;
+            renderMapAndList();
+          });
+        });
+
+        // Committee status modal open logic
+        window.openStatusModal = function(reportId) {
+          selectedReportId = reportId;
+          const r = reports.find(x => x.id === reportId);
+          if (r) {
+            document.getElementById('modal-report-code').textContent = r.code;
+            document.getElementById('modal-status-select').value = r.status;
+            const modal = new bootstrap.Modal(document.getElementById('statusModal'));
+            modal.show();
+          }
+        };
+
+        // Save status logic
+        document.getElementById('save-status-btn').addEventListener('click', () => {
+          if (selectedReportId) {
+            const r = reports.find(x => x.id === selectedReportId);
+            if (r) {
+              const newStatus = document.getElementById('modal-status-select').value;
+              r.status = newStatus;
+              renderMapAndList();
+              const modalEl = document.getElementById('statusModal');
+              const modal = bootstrap.Modal.getInstance(modalEl);
+              if (modal) modal.hide();
+              alert(`Estado del reporte ${r.code} actualizado exitosamente a: ${newStatus}`);
+            }
+          }
+        });
+      }
+    });
+  </script>
+</BaseLayout>

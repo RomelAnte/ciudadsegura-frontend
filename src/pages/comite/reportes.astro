@@ -1,0 +1,249 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { INITIAL_REPORTS, INCIDENT_CATEGORIES, REPORT_STATUSES } from '../../scripts/reportsData';
+---
+
+<BaseLayout title="Panel del Comité de Seguridad - Ciudad Segura" activeRole="comite" activePage="comite">
+  <div class="container-fluid py-3">
+    
+    <!-- Committee Header Banner -->
+    <div class="cg-card p-4 mb-4" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 58, 102, 0.8));">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="p-3 rounded-circle bg-danger bg-gradient text-white d-flex align-items-center justify-content-center shadow" style="width: 56px; height: 56px;">
+            <i class="bi bi-shield-shaded fs-2"></i>
+          </div>
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <h1 class="h4 fw-bold text-white mb-0">Panel de Control y Gestión del Comité</h1>
+              <span class="badge bg-danger text-white rounded-pill px-3 py-1" style="font-size: 0.75rem;">
+                <i class="bi bi-person-badge-fill me-1"></i> Staff Autorizado
+              </span>
+            </div>
+            <p class="text-slate-300 small mb-0">
+              Administración de novedades comunitarias, actualización de estados y gestión de cuentas del barrio.
+            </p>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <a href="/comite/crear-usuario" class="btn btn-success rounded-pill px-4 font-bold shadow d-flex align-items-center gap-2">
+            <i class="bi bi-person-plus-fill fs-5"></i> Crear Cuenta Vecino
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Anonymity Compliance Banner -->
+    <div class="alert alert-dark border border-slate-700 rounded-3 mb-4 p-3" style="background: rgba(11, 29, 58, 0.9);">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-incognito text-primary fs-4"></i>
+          <span class="small text-slate-300" style="font-size: 0.8rem;">
+            <strong class="text-white">Protocolo de Privacidad del Comité:</strong> De acuerdo con la norma de seguridad comunitaria, la identidad del autor de los reportes <strong class="text-warning">NO SE MUESTRA</strong> en este panel de gestión.
+          </span>
+        </div>
+        <span class="badge bg-slate-800 text-info border border-info border-opacity-25 rounded-pill px-3 py-1 font-monospace" style="font-size: 0.7rem;">
+          Anonimato Activo
+        </span>
+      </div>
+    </div>
+
+    <!-- Search & Filters Bar -->
+    <div class="cg-card p-3 mb-4">
+      <div class="row g-2 align-items-center">
+        
+        <div class="col-12 col-md-5">
+          <div class="input-group">
+            <span class="input-group-text border-slate-700 text-slate-400" style="background: #0b1d3a; border-color: #1e3a66;">
+              <i class="bi bi-search"></i>
+            </span>
+            <input type="text" class="form-control" id="table-search-input" placeholder="Buscar por código (ej: REP-101), sector o palabras..." />
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+          <select class="form-select" id="status-filter-select">
+            <option value="all">Todos los Estados</option>
+            <option value="PENDIENTE">🟧 Pendientes</option>
+            <option value="EN_PROCESO">🟦 En Revisión</option>
+            <option value="ATENDIDO">🟩 Atendidos</option>
+            <option value="ARCHIVADO">⬛ Archivados</option>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-4">
+          <select class="form-select" id="category-filter-select">
+            <option value="all">Todas las Categorías</option>
+            {INCIDENT_CATEGORIES.map(c => (
+              <option value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Reports Table Card -->
+    <div class="cg-card p-0 overflow-hidden">
+      <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle mb-0" style="background: rgba(17, 38, 71, 0.9);">
+          <thead style="background: #0b1d3a; border-bottom: 2px solid #1e3a66;">
+            <tr class="text-uppercase text-slate-400 small font-monospace">
+              <th scope="col" class="py-3 px-3">Código</th>
+              <th scope="col" class="py-3 px-3">Categoría</th>
+              <th scope="col" class="py-3 px-3">Detalle & Ubicación</th>
+              <th scope="col" class="py-3 px-3">Fecha & Hora</th>
+              <th scope="col" class="py-3 px-3 text-center">Estado Actual</th>
+              <th scope="col" class="py-3 px-3 text-end">Acciones Comité</th>
+            </tr>
+          </thead>
+          <tbody id="committee-table-body">
+            <!-- Dynamically populated rows preserving anonymity -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Status Update Confirmation Modal -->
+  <div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="background: #0f172a; border: 1px solid #1e3a66; color: #f8fafc;">
+        <div class="modal-header border-slate-700" style="border-color: #1e3a66 !important;">
+          <h5 class="modal-title h6 fw-bold text-white d-flex align-items-center gap-2">
+            <i class="bi bi-shield-shaded text-danger"></i> Actualizar Estado de Reporte
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-dark border border-slate-700 p-2 mb-3" style="background: rgba(11, 29, 58, 0.8);">
+            <div class="small text-slate-300">
+              Reporte: <strong class="text-white" id="modal-code-display">REP-2026-101</strong>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small text-slate-400">Seleccionar Nuevo Estado</label>
+            <select class="form-select" id="modal-new-status">
+              <option value="PENDIENTE">🟧 PENDIENTE (En espera de atención)</option>
+              <option value="EN_PROCESO">🟦 EN REVISIÓN (Comité coordinando)</option>
+              <option value="ATENDIDO">🟩 ATENDIDO (Solucionado por el barrio)</option>
+              <option value="ARCHIVADO">⬛ ARCHIVADO (Cerrado)</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small text-slate-400">Bitácora / Nota de gestión del comité</label>
+            <textarea class="form-control" id="modal-note-text" rows="2" placeholder="Describa la acción realizada (ej: se envió patrullaje de guardia privada al punto)..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer border-slate-700" style="border-color: #1e3a66 !important;">
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-sm btn-success rounded-pill px-4" id="confirm-status-btn">Actualizar Estado</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+      const reports = [
+        { id: 'REP-101', code: 'REP-2026-101', category: 'alumbrado', categoryName: 'Alumbrado Público', title: 'Luminaria principal apagada en pasaje peatonal', description: 'La luminaria poste #45 se apaga intermitentemente desde anoche.', locationName: 'Av. República y Pasaje Eloy Alfaro (La Carolina)', status: 'PENDIENTE', createdAt: 'Hace 1 hora' },
+        { id: 'REP-102', code: 'REP-2026-102', category: 'sospechoso', categoryName: 'Actividad Sospechosa', title: 'Vehículo oscuro estacionado sin placas cerca al portón', description: 'Automóvil sedan plomo estacionado con 2 ocupantes encendidos.', locationName: 'Calle Rumipamba y Av. Amazonas', status: 'EN_PROCESO', createdAt: 'Hace 4 horas' },
+        { id: 'REP-103', code: 'REP-2026-103', category: 'basura', categoryName: 'Acumulación de Basura', title: 'Desechos de poda acumulados obstruyendo la acera', description: 'Fueron dejados sacos de restos vegetales en la acera.', locationName: 'Av. González Suárez y Coruña', status: 'ATENDIDO', createdAt: 'Hace 14 horas' },
+        { id: 'REP-104', code: 'REP-2026-104', category: 'ruido', categoryName: 'Ruido Excesivo / Fiesta', title: 'Música a alto volumen en inmueble deshabitado', description: 'Ruido molesto afectando el descanso del sector.', locationName: 'Pasaje El Jardín #142', status: 'PENDIENTE', createdAt: 'Hace 2 horas' },
+        { id: 'REP-105', code: 'REP-2026-105', category: 'vandalismo', categoryName: 'Grafiti / Vandalismo', title: 'Manchado de pintura en pared posterior de la casa comunal', description: 'Pintas recientes realizadas durante el fin de semana.', locationName: 'Calle Batán Alto y Shyris', status: 'ATENDIDO', createdAt: 'Hace 1 día' }
+      ];
+
+      let targetReportId = null;
+
+      function renderTable() {
+        const tbody = document.getElementById('committee-table-body');
+        const search = document.getElementById('table-search-input').value.toLowerCase();
+        const statusFilter = document.getElementById('status-filter-select').value;
+        const categoryFilter = document.getElementById('category-filter-select').value;
+
+        tbody.innerHTML = '';
+
+        const filtered = reports.filter(r => {
+          const matchSearch = r.code.toLowerCase().includes(search) || r.title.toLowerCase().includes(search) || r.locationName.toLowerCase().includes(search);
+          const matchStatus = statusFilter === 'all' || r.status === statusFilter;
+          const matchCat = categoryFilter === 'all' || r.category === categoryFilter;
+          return matchSearch && matchStatus && matchCat;
+        });
+
+        filtered.forEach(r => {
+          let badgeClass = 'bg-warning text-dark';
+          if (r.status === 'EN_PROCESO') badgeClass = 'bg-info text-dark';
+          if (r.status === 'ATENDIDO') badgeClass = 'bg-success text-white';
+          if (r.status === 'ARCHIVADO') badgeClass = 'bg-secondary text-white';
+
+          const tr = document.createElement('tr');
+          tr.style.borderColor = '#1e3a66';
+          tr.innerHTML = `
+            <td class="py-3 px-3 font-monospace fw-bold text-white" style="font-size: 0.85rem;">${r.code}</td>
+            <td class="py-3 px-3">
+              <span class="badge bg-slate-800 text-info border border-info border-opacity-25 rounded-pill px-2.5 py-1" style="font-size: 0.7rem;">
+                ${r.categoryName}
+              </span>
+            </td>
+            <td class="py-3 px-3" style="max-width: 280px;">
+              <div class="fw-bold text-white text-truncate mb-0" style="font-size: 0.85rem;">${r.title}</div>
+              <div class="small text-slate-400 text-truncate" style="font-size: 0.75rem;"><i class="bi bi-geo-alt me-1 text-danger"></i>${r.locationName}</div>
+            </td>
+            <td class="py-3 px-3 small text-slate-400 font-monospace" style="font-size: 0.75rem;">${r.createdAt}</td>
+            <td class="py-3 px-3 text-center">
+              <span class="badge ${badgeClass} px-3 py-1.5 rounded-pill" style="font-size: 0.75rem;">
+                ${r.status}
+              </span>
+            </td>
+            <td class="py-3 px-3 text-end">
+              <div class="d-flex justify-content-end gap-1">
+                <a href="/reportes/${r.id}?role=comite" class="btn btn-xs btn-outline-info rounded-pill px-3" style="font-size: 0.75rem;">
+                  <i class="bi bi-eye"></i> Detalle
+                </a>
+                <button class="btn btn-xs btn-danger rounded-pill px-3" style="font-size: 0.75rem;" onclick="window.triggerStatusModal('${r.id}')">
+                  <i class="bi bi-gear-fill me-1"></i> Estado
+                </button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      renderTable();
+
+      document.getElementById('table-search-input').addEventListener('input', renderTable);
+      document.getElementById('status-filter-select').addEventListener('change', renderTable);
+      document.getElementById('category-filter-select').addEventListener('change', renderTable);
+
+      window.triggerStatusModal = function(id) {
+        targetReportId = id;
+        const r = reports.find(x => x.id === id);
+        if (r) {
+          document.getElementById('modal-code-display').textContent = r.code;
+          document.getElementById('modal-new-status').value = r.status;
+          const modal = new bootstrap.Modal(document.getElementById('statusUpdateModal'));
+          modal.show();
+        }
+      };
+
+      document.getElementById('confirm-status-btn').addEventListener('click', () => {
+        if (targetReportId) {
+          const r = reports.find(x => x.id === targetReportId);
+          if (r) {
+            r.status = document.getElementById('modal-new-status').value;
+            renderTable();
+            const modalEl = document.getElementById('statusUpdateModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+            alert(`Estado del reporte ${r.code} actualizado correctamente.`);
+          }
+        }
+      });
+    });
+  </script>
+</BaseLayout>
