@@ -6,7 +6,7 @@ const roleParam = Astro.url.searchParams.get('role') || 'ciudadano';
 const isComite = roleParam === 'comite';
 
 // Filter only current user's reports
-const myReports = INITIAL_REPORTS.filter(r => r.userId === CURRENT_USER.id);
+const reports = await INITIAL_REPORTS();
 ---
 
 <BaseLayout title="Mis Reportes - Ciudad Segura" activeRole={isComite ? 'comite' : 'ciudadano'} activePage="mis-reportes">
@@ -52,7 +52,7 @@ const myReports = INITIAL_REPORTS.filter(r => r.userId === CURRENT_USER.id);
 
     <!-- Report Cards List -->
     <div class="d-flex flex-column gap-3">
-      {myReports.map(report => {
+      {reports.map(report => {
         const statusInfo = REPORT_STATUSES[report.status] || REPORT_STATUSES.PENDIENTE;
         const windowStatus = getReportWindowStatus(report.createdAt, report.userId);
 

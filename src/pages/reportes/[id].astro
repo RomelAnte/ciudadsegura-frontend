@@ -12,7 +12,7 @@ const statusInfo = REPORT_STATUSES[report.status] || REPORT_STATUSES.PENDIENTE;
 const windowStatus = getReportWindowStatus(report.createdAt, report.userId);
 ---
 
-<BaseLayout title={`Detalle ${report.code} - Ciudad Segura`} activeRole={isComite ? 'comite' : 'ciudadano'} activePage="mapa">
+<BaseLayout title={`Detalle ${report.id} - Ciudad Segura`} activeRole={isComite ? 'comite' : 'ciudadano'} activePage="mapa">
   <div class="container py-3 max-w-4xl">
     
     <!-- Top Action Nav -->
@@ -67,14 +67,14 @@ const windowStatus = getReportWindowStatus(report.createdAt, report.userId);
           <div class="d-flex align-items-center justify-content-between border-bottom pb-3 mb-3" style="border-color: #1e3a66 !important;">
             <div>
               <span class="small text-slate-400 font-monospace" style="font-size: 0.75rem;">CÓDIGO OFICIAL</span>
-              <h2 class="h4 fw-bold text-white mb-0">{report.code}</h2>
+              <h2 class="h4 fw-bold text-white mb-0">{report.id}</h2>
             </div>
             <span class="badge bg-slate-800 text-info border border-info border-opacity-25 px-3 py-1 rounded-pill">
-              <i class="bi bi-tag-fill me-1"></i> {report.categoryName}
+              <i class="bi bi-tag-fill me-1"></i> {report.type}
             </span>
           </div>
 
-          <h3 class="h5 fw-bold text-white mb-2">{report.title}</h3>
+          <h3 class="h5 fw-bold text-white mb-2">{report.description}</h3>
           <p class="text-slate-300 small mb-4" style="line-height: 1.6; color: #cbd5e1;">
             {report.description}
           </p>
@@ -84,7 +84,7 @@ const windowStatus = getReportWindowStatus(report.createdAt, report.userId);
             <div class="small text-slate-400 font-monospace mb-1" style="font-size: 0.7rem;">UBICACIÓN REGISTRADA</div>
             <div class="d-flex align-items-center gap-2 text-white font-semibold">
               <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
-              <span>{report.locationName}</span>
+              <span>{report.address}</span>
             </div>
           </div>
 
