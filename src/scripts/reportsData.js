@@ -36,7 +36,7 @@ export async function fetchIncidentCategories() {
 }
 
 // Top-level export con fallback seguro para server-side rendering
-export const INCIDENT_CATEGORIES = await fetchIncidentCategories();
+export const INCIDENT_CATEGORIES = DEFAULT_INCIDENT_CATEGORIES;
 
 export const REPORT_STATUSES = {
   PENDIENTE: { label: 'Pendiente', badgeClass: 'bg-warning text-dark', icon: 'bi-clock-history', color: '#f59e0b' },

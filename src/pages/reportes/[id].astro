@@ -2,14 +2,40 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { INITIAL_REPORTS, REPORT_STATUSES, getReportWindowStatus } from '../../scripts/reportsData';
 
+export async function getStaticPaths() {
+  const reports = typeof INITIAL_REPORTS === 'function' ? await INITIAL_REPORTS() : (INITIAL_REPORTS || []);
+  if (!reports || reports.length === 0) {
+    return [{ params: { id: 'REP-101' } }, { params: { id: 'REP-102' } }];
+  }
+  return reports.map(r => ({ params: { id: String(r.id || 'REP-101') } }));
+}
+
 const { id } = Astro.params;
 const roleParam = Astro.url.searchParams.get('role') || 'ciudadano';
 const isComite = roleParam === 'comite';
 
-// Find report or fallback to first report
-const report = INITIAL_REPORTS.find(r => r.id === id) || INITIAL_REPORTS[0];
-const statusInfo = REPORT_STATUSES[report.status] || REPORT_STATUSES.PENDIENTE;
-const windowStatus = getReportWindowStatus(report.createdAt, report.userId);
+const reportsList = typeof INITIAL_REPORTS === 'function' ? await INITIAL_REPORTS() : (INITIAL_REPORTS || []);
+const fallbackReport = { 
+  id: id || 'REP-101', 
+  title: 'Reporte de prueba', 
+  description: 'Descripción de prueba', 
+  status: 'PENDIENTE', 
+  createdAt: new Date().toISOString(), 
+  userId: 'user-123',
+  address: 'San Luis de Chillogallo, Quito',
+  type: 'General',
+  lat: -0.1807,
+  lng: -78.4678,
+  timeline: [{ status: 'PENDIENTE', note: 'Reporte registrado' }]
+};
+const rawReport = (Array.isArray(reportsList) && reportsList.find(r => String(r.id) === String(id))) || reportsList[0] || fallbackReport;
+const report = {
+  ...fallbackReport,
+  ...rawReport,
+  timeline: Array.isArray(rawReport?.timeline) ? rawReport.timeline : fallbackReport.timeline
+};
+const statusInfo = (REPORT_STATUSES && REPORT_STATUSES[report.status]) || REPORT_STATUSES.PENDIENTE;
+const windowStatus = getReportWindowStatus ? getReportWindowStatus(report.createdAt, report.userId) : { canModify: false, isOwner: false };
 ---
 
 <BaseLayout title={`Detalle ${report.id} - Ciudad Segura`} activeRole={isComite ? 'comite' : 'ciudadano'} activePage="mapa">

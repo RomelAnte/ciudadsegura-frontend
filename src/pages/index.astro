@@ -1,694 +1,526 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import {
-    INITIAL_REPORTS,
-    INCIDENT_CATEGORIES,
-    REPORT_STATUSES,
-} from "../scripts/reportsData";
+import LandingLayout from "../layouts/LandingLayout.astro";
 
-const roleParam = Astro.url.searchParams.get("role") || "ciudadano";
-const isComite = roleParam === "comite";
+// =========================================================================
+// CONFIGURACIÓN DEL TIEMPO ESTIMADO DE DESPLIEGUE (Modificable en este bloque)
+// =========================================================================
+const ESTIMATED_TIMELINE = "4 a 6 semanas";
+const ESTIMATED_DATE = "Noviembre 2026";
+
+// Estado de las etapas del proyecto
+const PROJECT_TIMELINE = [
+  {
+    phase: "Identificación del problema",
+    description: "Evaluación de necesidades de comunicación y seguridad en el barrio.",
+    status: "completed", // 'completed' | 'in-progress' | 'pending'
+    icon: "bi-check-circle-fill",
+    badge: "Completado"
+  },
+  {
+    phase: "Diseño de la solución",
+    description: "Definición de flujos, mapas interactivos y prototipos para la comunidad.",
+    status: "completed",
+    icon: "bi-check-circle-fill",
+    badge: "Completado"
+  },
+  {
+    phase: "Desarrollo de la plataforma",
+    description: "Programación de módulos de reporte, autenticación y panel del comité.",
+    status: "in-progress",
+    icon: "bi-hammer",
+    badge: "En proceso"
+  },
+  {
+    phase: "Pruebas y validación",
+    description: "Validación con vecinos del comité y pruebas directas de seguridad digital.",
+    status: "pending",
+    icon: "bi-shield-check",
+    badge: "Próximamente"
+  },
+  {
+    phase: "Primer despliegue oficial",
+    description: "Lanzamiento oficial para el uso de las familias de San Luis de Chillogallo.",
+    status: "pending",
+    icon: "bi-rocket-takeoff",
+    badge: "Pendiente"
+  }
+];
+
+// Los 4 pasos de funcionamiento futuro
+const HOW_IT_WORKS_STEPS = [
+  {
+    stepNumber: "01",
+    title: "Reportar",
+    icon: "bi-megaphone-fill",
+    description: "Cualquier vecino podrá registrar un incidente indicando la ubicación exacta, fotos y categoría en pocos pasos."
+  },
+  {
+    stepNumber: "02",
+    title: "Registrar",
+    icon: "bi-database-fill-check",
+    description: "El reporte se guardará de forma centralizada y segura en el sistema comunitario del barrio."
+  },
+  {
+    stepNumber: "03",
+    title: "Revisar",
+    icon: "bi-shield-shaded",
+    description: "Integrantes del Comité de Seguridad verificarán la novedad para clasificarla y coordinar la acción requerida."
+  },
+  {
+    stepNumber: "04",
+    title: "Dar seguimiento",
+    icon: "bi-arrow-repeat",
+    description: "La comunidad podrá consultar el avance en tiempo real hasta que la novedad sea atendida y resuelta."
+  }
+];
 ---
 
-<BaseLayout
-    title="Mapa de Incidentes"
-    activeRole={isComite ? "comite" : "ciudadano"}
-    activePage="mapa"
+<LandingLayout 
+  title="Ciudad Segura | Proyecto Comunitario San Luis de Chillogallo" 
+  description="Plataforma comunitaria en desarrollo para organizar, centralizar y dar seguimiento a los reportes de seguridad de San Luis de Chillogallo, Quito."
 >
-    <div class="container-fluid py-2">
-        <!-- Hero Command Center Banner -->
-        <div
-            class="cg-card p-3 p-md-4 mb-4 position-relative overflow-hidden"
-            style="background: linear-gradient(135deg, rgba(11, 29, 58, 0.95), rgba(17, 38, 71, 0.9));"
-        >
-            <div class="row align-items-center gy-3">
-                <div class="col-12 col-lg-7">
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <span
-                            class={`badge ${isComite ? "bg-danger text-white" : "bg-primary text-white"} px-3 py-1 rounded-pill`}
-                            style="font-size: 0.75rem;"
-                        >
-                            <i
-                                class={`bi ${isComite ? "bi-shield-shaded" : "bi-person-circle"} me-1`}
-                            ></i>
-                            {
-                                isComite
-                                    ? "CENTRO DE COMANDO DIGITAL (COMITÉ)"
-                                    : "RED DE ALERTA COMUNITARIA (CIUDADANO)"
-                            }
-                        </span>
-                        <span class="text-slate-400 small d-none d-sm-inline"
-                            >• Quito Sector La Carolina</span
-                        >
-                    </div>
-                    <h1 class="h3 fw-extrabold text-white mb-2">
-                        {
-                            isComite
-                                ? "Monitoreo y Gestión Territorial de Incidentes"
-                                : "Tu participación fortalece la seguridad de tu comunidad"
-                        }
-                    </h1>
-                    <p
-                        class="text-slate-300 small mb-0 max-w-2xl"
-                        style="color: #cbd5e1;"
-                    >
-                        {
-                            isComite
-                                ? "Panel de control del Comité de Seguridad. Visualice, filtre y actualice el estado de los reportes emitidos por los vecinos."
-                                : "Consulte en tiempo real las novedades reportadas por los vecinos del barrio. Juntos mantenemos nuestro sector iluminado, ordenado y seguro."
-                        }
-                    </p>
-                </div>
-
-                <div class="col-12 col-lg-5">
-                    <!-- Stat Cards Grid -->
-                    <div class="row g-2">
-                        <div class="col-6 col-sm-3 col-lg-6">
-                            <div
-                                class="p-2 rounded-3 border"
-                                style="background: rgba(15, 23, 42, 0.6); border-color: #1e3a66 !important;"
-                            >
-                                <div
-                                    class="small text-slate-400"
-                                    style="font-size: 0.7rem;"
-                                >
-                                    TOTAL REPORTES
-                                </div>
-                                <div
-                                    class="h4 mb-0 fw-bold text-white font-monospace"
-                                    id="stat-total"
-                                >
-                                    5
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-sm-3 col-lg-6">
-                            <div
-                                class="p-2 rounded-3 border"
-                                style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3) !important;"
-                            >
-                                <div
-                                    class="small text-amber-400"
-                                    style="font-size: 0.7rem; color: #fbbf24;"
-                                >
-                                    PENDIENTES
-                                </div>
-                                <div
-                                    class="h4 mb-0 fw-bold text-amber-400 font-monospace"
-                                    style="color: #fbbf24;"
-                                    id="stat-pending"
-                                >
-                                    2
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-sm-3 col-lg-6">
-                            <div
-                                class="p-2 rounded-3 border"
-                                style="background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3) !important;"
-                            >
-                                <div
-                                    class="small text-blue-400"
-                                    style="font-size: 0.7rem; color: #60a5fa;"
-                                >
-                                    EN REVISIÓN
-                                </div>
-                                <div
-                                    class="h4 mb-0 fw-bold text-blue-400 font-monospace"
-                                    style="color: #60a5fa;"
-                                    id="stat-progress"
-                                >
-                                    1
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-sm-3 col-lg-6">
-                            <div
-                                class="p-2 rounded-3 border"
-                                style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3) !important;"
-                            >
-                                <div
-                                    class="small text-emerald-400"
-                                    style="font-size: 0.7rem; color: #34d399;"
-                                >
-                                    ATENDIDOS
-                                </div>
-                                <div
-                                    class="h4 mb-0 fw-bold text-emerald-400 font-monospace"
-                                    style="color: #34d399;"
-                                    id="stat-resolved"
-                                >
-                                    2
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <!-- TOP BAR / NAVIGATION BRAND -->
+  <header class="sticky-top bg-dark border-bottom border-slate-800" style="background-color: #070e1c !important; border-color: rgba(255,255,255,0.08) !important;">
+    <div class="container py-2.5 px-3">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <div class="rounded-3 p-1.5 d-flex align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, #10b981, #059669); width: 36px; height: 36px;">
+            <i class="bi bi-shield-lock-fill fs-5"></i>
+          </div>
+          <div>
+            <div class="fw-bold text-white lh-1 fs-6">Ciudad Segura</div>
+            <div class="text-slate-400" style="font-size: 0.7rem; color: #94a3b8;">San Luis de Chillogallo</div>
+          </div>
         </div>
 
-        <!-- Category Filter Bar & Committee Status Controls -->
-        <div class="row mb-3 gy-2 align-items-center">
-            <div class="col-12">
-                <div
-                    class="d-flex align-items-center gap-2 overflow-x-auto pb-1"
-                    id="category-filters-container"
-                >
-                    <button
-                        class="btn btn-sm btn-primary px-3 rounded-pill flex-shrink-0 category-filter-btn active"
-                        data-category="all"
-                    >
-                        <i class="bi bi-grid-fill me-1"></i> Todos los tipos
-                    </button>
-                    {
-                        INCIDENT_CATEGORIES.map((cat) => (
-                            <button
-                                class="btn btn-sm btn-outline-secondary px-3 rounded-pill flex-shrink-0 category-filter-btn text-slate-200"
-                                style="border-color: #1e3a66;"
-                                data-category={cat.id}
-                            >
-                                <i
-                                    class={`bi ${cat.icon || "bi-tag"} me-1`}
-                                    style={`color: ${cat.color || "#3b82f6"};`}
-                                />{" "}
-                                {cat.name}
-                            </button>
-                        ))
-                    }
-                </div>
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div
-                class="col-12 d-flex justify-content-start justify-content-md-end gap-2"
-            >
-                {
-                    isComite ? (
-                        <div class="dropdown">
-                            <button
-                                class="btn btn-sm btn-danger dropdown-toggle rounded-pill px-3 shadow-sm"
-                                type="button"
-                                data-bs-toggle="dropdown"
-                            >
-                                <i class="bi bi-funnel-fill me-1" /> Filtrar
-                                Estado (Comité)
-                            </button>
-                            <ul
-                                class="dropdown-menu dropdown-menu-dark shadow"
-                                style="background: #0f172a; border-color: #1e3a66;"
-                            >
-                                <li>
-                                    <a
-                                        class="dropdown-item status-filter-item active"
-                                        href="#"
-                                        data-status="all"
-                                    >
-                                        Mostrar Todos
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        class="dropdown-item status-filter-item text-warning"
-                                        href="#"
-                                        data-status="PENDIENTE"
-                                    >
-                                        <i class="bi bi-clock-history me-1" />{" "}
-                                        Solo Pendientes
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        class="dropdown-item status-filter-item text-info"
-                                        href="#"
-                                        data-status="EN_PROCESO"
-                                    >
-                                        <i class="bi bi-gear-wide-connected me-1" />{" "}
-                                        Solo En Revisión
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
-                                        class="dropdown-item status-filter-item text-success"
-                                        href="#"
-                                        data-status="ATENDIDO"
-                                    >
-                                        <i class="bi bi-check-circle-fill me-1" />{" "}
-                                        Solo Atendidos
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    ) : (
-                        <a
-                            href="/reportar"
-                            class="btn btn-sm btn-primary rounded-pill px-4 shadow d-none d-md-inline-flex align-items-center gap-1"
-                        >
-                            <i class="bi bi-plus-lg" /> Crear Reporte
-                        </a>
-                    )
-                }
-            </div>
-        </div>
-
-        <!-- Main Content Grid (Map + Side Panel) -->
-        <div class="row g-3">
-            <!-- Leaflet Map Container -->
-            <div class="col-12 col-lg-8">
-                <div
-                    class="cg-card p-2 position-relative"
-                    style="height: 520px;"
-                >
-                    <div id="leaflet-main-map" class="rounded-3"></div>
-
-                    <!-- Map Floating Legend -->
-                    <div
-                        class="position-absolute bottom-0 start-0 m-3 p-2 rounded-3 shadow-lg d-none d-sm-flex align-items-center gap-3"
-                        style="background: rgba(7, 19, 36, 0.9); backdrop-filter: blur(8px); border: 1px solid #1e3a66; z-index: 1000; font-size: 0.75rem;"
-                    >
-                        <div class="d-flex align-items-center gap-1">
-                            <span
-                                class="badge bg-warning p-1 rounded-circle"
-                                style="width: 10px; height: 10px;"></span> Pendiente
-                        </div>
-                        <div class="d-flex align-items-center gap-1">
-                            <span
-                                class="badge bg-info p-1 rounded-circle"
-                                style="width: 10px; height: 10px;"></span> En Revisión
-                        </div>
-                        <div class="d-flex align-items-center gap-1">
-                            <span
-                                class="badge bg-success p-1 rounded-circle"
-                                style="width: 10px; height: 10px;"></span> Atendido
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Incident Quick List Side Panel -->
-            <div class="col-12 col-lg-4">
-                <div class="cg-card h-100 p-3 flex-direction-column">
-                    <div
-                        class="d-flex align-items-center justify-content-between pb-2 mb-2 border-bottom"
-                        style="border-color: #1e3a66 !important;"
-                    >
-                        <h2 class="h6 fw-bold text-white mb-0">
-                            <i class="bi bi-list-stars me-1 text-primary"></i> Incidentes
-                            Recientes
-                        </h2>
-                        <span
-                            class="badge bg-slate-800 text-slate-300 font-monospace"
-                            style="font-size: 0.7rem;"
-                            id="filtered-count">5 reportes</span
-                        >
-                    </div>
-
-                    <div
-                        class="flex-grow-1 overflow-auto"
-                        style="max-height: 440px;"
-                        id="incidents-sidebar-list"
-                    >
-                        <!-- Dynamically populated incident cards -->
-                    </div>
-                </div>
-            </div>
-        </div>
+        <span class="badge rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 0.75rem;">
+          <span class="badge-pulse"></span>
+          <span>En desarrollo</span>
+        </span>
+      </div>
     </div>
+  </header>
 
-    <!-- Mobile Floating Action Button (FAB) for Report Creation -->
-    <div
-        class="position-fixed bottom-0 end-0 m-4 d-md-none"
-        style="z-index: 1050; margin-bottom: 75px !important;"
-    >
-        <a href="/reportar" class="cg-fab-btn" title="Crear Reporte">
-            <i class="bi bi-plus-lg"></i>
-        </a>
-    </div>
+  <main class="flex-grow-1">
 
-    <!-- Committee Quick Status Change Modal -->
-    <div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div
-                class="modal-content"
-                style="background: #0f172a; border: 1px solid #1e3a66; color: #f8fafc;"
-            >
-                <div
-                    class="modal-header border-slate-700"
-                    style="border-color: #1e3a66 !important;"
-                >
-                    <h5
-                        class="modal-title h6 fw-bold text-white d-flex align-items-center gap-2"
-                    >
-                        <i class="bi bi-shield-shaded text-danger"></i> Cambiar Estado
-                        del Reporte (Comité)
-                    </h5>
-                    <button
-                        type="button"
-                        class="btn-close btn-close-white"
-                        data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="small text-slate-300 mb-2">
-                        Seleccione el nuevo estado para <strong
-                            id="modal-report-code"
-                            class="text-white">REP-101</strong
-                        >:
-                    </p>
-                    <div class="mb-3">
-                        <label class="form-label small text-slate-400"
-                            >Nuevo Estado</label
-                        >
-                        <select class="form-select" id="modal-status-select">
-                            <option value="PENDIENTE"
-                                >🟧 PENDIENTE (En espera de atención)</option
-                            >
-                            <option value="EN_PROCESO"
-                                >🟦 EN REVISIÓN (Comité / Guardia coordinando)</option
-                            >
-                            <option value="ATENDIDO"
-                                >🟩 ATENDIDO (Novedad resuelta)</option
-                            >
-                            <option value="ARCHIVADO"
-                                >⬛ ARCHIVADO (Cerrado)</option
-                            >
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small text-slate-400"
-                            >Nota de Seguimiento del Comité (Opcional)</label
-                        >
-                        <textarea
-                            class="form-control"
-                            id="modal-status-note"
-                            rows="2"
-                            placeholder="Ej: Se comunicó con la cuadrilla municipal de alumbrado público."
-                        ></textarea>
-                    </div>
-                    <div
-                        class="alert alert-dark border border-info border-opacity-25 rounded-3 py-2 px-3 mb-0"
-                        style="background: rgba(59, 130, 246, 0.1);"
-                    >
-                        <div
-                            class="small text-info"
-                            style="font-size: 0.75rem;"
-                        >
-                            <i class="bi bi-shield-lock me-1"></i> El anonimato del
-                            autor se mantiene protegido en los registros del sistema.
-                        </div>
-                    </div>
-                </div>
-                <div
-                    class="modal-footer border-slate-700"
-                    style="border-color: #1e3a66 !important;"
-                >
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-outline-secondary rounded-pill"
-                        data-bs-dismiss="modal">Cancelar</button
-                    >
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-success rounded-pill px-4"
-                        id="save-status-btn">Guardar Cambios</button
-                    >
-                </div>
+    <!-- 1. HERO SECTION -->
+    <section class="position-relative text-white py-5 py-md-6 overflow-hidden" style="background: linear-gradient(180deg, #070e1c 0%, #0b172a 100%);">
+      <!-- Background subtle grid pattern -->
+      <div class="position-absolute top-0 start-0 w-100 h-100 opacity-10" style="background-image: radial-gradient(#38bdf8 1px, transparent 1px); background-size: 24px 24px; pointer-events: none;"></div>
+
+      <div class="container position-relative px-3 px-md-4">
+        <div class="row align-items-center gy-4">
+          <div class="col-12 col-lg-7 text-start">
+            
+            <!-- Development Tag -->
+            <div class="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill mb-3" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25);">
+              <i class="bi bi-info-circle-fill text-emerald-400" style="color: #34d399;"></i>
+              <span class="fw-medium text-emerald-300" style="font-size: 0.8rem; color: #6ee7b7;">Plataforma en desarrollo</span>
             </div>
+
+            <!-- Title -->
+            <h1 class="display-4 fw-extrabold text-white mb-3" style="letter-spacing: -0.03em; line-height: 1.1;">
+              Ciudad Segura
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="fs-5 text-slate-300 mb-4 max-w-2xl" style="color: #cbd5e1; line-height: 1.5;">
+              Una iniciativa para organizar, centralizar y dar seguimiento a los reportes de seguridad de nuestra comunidad.
+            </p>
+
+            <!-- Location & Committee Identification Tag -->
+            <div class="d-flex align-items-center gap-2 mb-4 text-slate-400 small" style="color: #94a3b8;">
+              <i class="bi bi-geo-alt-fill text-danger"></i>
+              <span>San Luis de Chillogallo · Quito, Ecuador</span>
+            </div>
+
+            <!-- CTA Button -->
+            <div class="d-flex flex-wrap align-items-center gap-3">
+              <a href="#problema" class="btn btn-lg rounded-pill px-4 py-2.5 fw-semibold text-white cs-transition shadow-lg d-inline-flex align-items-center gap-2" style="background: linear-gradient(135deg, #10b981, #059669); border: none; font-size: 1rem;">
+                <span>Conoce el proyecto</span>
+                <i class="bi bi-arrow-down-short fs-5"></i>
+              </a>
+
+              <a href="#tiempo" class="btn btn-lg btn-outline-light rounded-pill px-4 py-2.5 fw-medium cs-transition d-inline-flex align-items-center gap-2" style="border-color: rgba(255,255,255,0.2); font-size: 0.95rem;">
+                <i class="bi bi-calendar-event me-1"></i>
+                <span>Ver estimado</span>
+              </a>
+            </div>
+
+            <!-- Clarification Banner: Application Not Finished Yet -->
+            <div class="mt-4.5 p-3 rounded-3 border" style="background: rgba(15, 23, 42, 0.8); border-color: rgba(245, 158, 11, 0.3) !important;">
+              <div class="d-flex align-items-start gap-2.5 text-slate-300" style="font-size: 0.825rem; color: #cbd5e1;">
+                <i class="bi bi-exclamation-triangle-fill text-warning flex-shrink-0 mt-0.5 fs-6"></i>
+                <div>
+                  <strong class="text-white d-block mb-0.5">Nota importante para los visitantes:</strong>
+                  La aplicación se encuentra en etapa de programación y pruebas. No está disponible aún para iniciar sesión ni registrar incidentes en vivo.
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Hero Illustrative Card / Preview -->
+          <div class="col-12 col-lg-5">
+            <div class="rounded-4 p-4 p-md-4.5 shadow-2xl position-relative overflow-hidden" style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px);">
+              <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-slate-700" style="border-color: rgba(255,255,255,0.1) !important;">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-shield-check text-emerald-400 fs-5" style="color: #34d399;"></i>
+                  <span class="fw-bold text-white small">Vista preliminar del sistema</span>
+                </div>
+                <span class="badge bg-slate-800 text-slate-400 font-monospace" style="font-size: 0.65rem; background: #1e293b; color: #94a3b8;">V1.0 (En construcción)</span>
+              </div>
+
+              <!-- Mockup Cards showing concept -->
+              <div class="d-flex flex-column gap-2.5">
+                <div class="p-3 rounded-3 text-start" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.06);">
+                  <div class="d-flex align-items-center justify-content-between mb-1">
+                    <span class="badge bg-warning text-dark fw-bold" style="font-size: 0.65rem;">01. ALUMBRADO</span>
+                    <span class="text-slate-400 font-monospace" style="font-size: 0.65rem; color: #94a3b8;">Futuro canal de reporte</span>
+                  </div>
+                  <div class="fw-semibold text-white small">Luminarias dañadas o sectores oscuros</div>
+                  <div class="text-slate-400 mt-1" style="font-size: 0.75rem; color: #94a3b8;">Ubicación en mapa + fotografía directa del vecindario</div>
+                </div>
+
+                <div class="p-3 rounded-3 text-start" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.06);">
+                  <div class="d-flex align-items-center justify-content-between mb-1">
+                    <span class="badge bg-info text-dark fw-bold" style="font-size: 0.65rem;">02. NOVEDADES</span>
+                    <span class="text-slate-400 font-monospace" style="font-size: 0.65rem; color: #94a3b8;">Organización central</span>
+                  </div>
+                  <div class="fw-semibold text-white small">Gestión verificada por el Comité</div>
+                  <div class="text-slate-400 mt-1" style="font-size: 0.75rem; color: #94a3b8;">Consolidación de alertas evitando desinformación en chats</div>
+                </div>
+
+                <div class="p-3 rounded-3 text-start" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2);">
+                  <div class="d-flex align-items-center gap-2 text-emerald-300 small" style="color: #6ee7b7; font-size: 0.75rem;">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Solución pensada para las familias de San Luis de Chillogallo</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+    </section>
+
+    <!-- 2. EL PROBLEMA SECTION -->
+    <section id="problema" class="py-5 py-md-6 bg-white text-dark">
+      <div class="container px-3 px-md-4">
+        
+        <div class="text-center max-w-3xl mx-auto mb-5">
+          <span class="badge rounded-pill px-3 py-1.5 mb-2 fw-semibold" style="background: #e0e7ff; color: #3730a3; font-size: 0.8rem;">
+            El contexto actual
+          </span>
+          <h2 class="display-6 fw-bold text-slate-900 mb-3" style="letter-spacing: -0.02em;">
+            ¿Por qué surge Ciudad Segura?
+          </h2>
+          <p class="fs-6 text-slate-600 mb-0" style="color: #475569; line-height: 1.6;">
+            En muchas comunidades, la comunicación sobre novedades y seguridad suele gestionarse mediante canales informales. Esto genera problemas frecuentes que buscamos resolver.
+          </p>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+          <!-- Problem Card 1 -->
+          <div class="col-12 col-md-4">
+            <div class="h-100 p-4 rounded-4 bg-slate-50 border border-slate-200 cs-transition hover-shadow" style="background-color: #f8fafc; border-color: #e2e8f0 !important;">
+              <div class="rounded-3 p-3 mb-3 d-inline-flex align-items-center justify-content-center text-danger" style="background: #fee2e2; width: 48px; height: 48px;">
+                <i class="bi bi-chat-left-dots-fill fs-4"></i>
+              </div>
+              <h3 class="h5 fw-bold text-slate-900 mb-2">Información dispersa</h3>
+              <p class="text-slate-600 small mb-0" style="color: #475569; line-height: 1.6;">
+                Los avisos sobre incidentes se pierden entre cientos de mensajes diarios en chats de WhatsApp, comentarios verbales y reuniones informales.
+              </p>
+            </div>
+          </div>
+
+          <!-- Problem Card 2 -->
+          <div class="col-12 col-md-4">
+            <div class="h-100 p-4 rounded-4 bg-slate-50 border border-slate-200 cs-transition hover-shadow" style="background-color: #f8fafc; border-color: #e2e8f0 !important;">
+              <div class="rounded-3 p-3 mb-3 d-inline-flex align-items-center justify-content-center text-amber-600" style="background: #fef3c7; color: #d97706; width: 48px; height: 48px;">
+                <i class="bi bi-search-heart-fill fs-4"></i>
+              </div>
+              <h3 class="h5 fw-bold text-slate-900 mb-2">Dificultad de seguimiento</h3>
+              <p class="text-slate-600 small mb-0" style="color: #475569; line-height: 1.6;">
+                Resulta complejo saber si una luminaria quemada o una novedad ya fue gestionada, quién la atendió o en qué estado se encuentra.
+              </p>
+            </div>
+          </div>
+
+          <!-- Problem Card 3 -->
+          <div class="col-12 col-md-4">
+            <div class="h-100 p-4 rounded-4 bg-slate-50 border border-slate-200 cs-transition hover-shadow" style="background-color: #f8fafc; border-color: #e2e8f0 !important;">
+              <div class="rounded-3 p-3 mb-3 d-inline-flex align-items-center justify-content-center text-emerald-600" style="background: #d1fae5; color: #059669; width: 48px; height: 48px;">
+                <i class="bi bi-folder-symlink-fill fs-4"></i>
+              </div>
+              <h3 class="h5 fw-bold text-slate-900 mb-2">Falta de historial organizado</h3>
+              <p class="text-slate-600 small mb-0" style="color: #475569; line-height: 1.6;">
+                Al no existir un registro claro, la directiva del comité no cuenta con datos consolidados para priorizar los sectores que requieren mayor atención.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Problem Banner Summary -->
+        <div class="mt-5 p-4 rounded-4 text-white text-center shadow-md" style="background: linear-gradient(135deg, #0b172a, #1e293b);">
+          <div class="row align-items-center gy-3">
+            <div class="col-12 col-md-8 text-md-start">
+              <h4 class="h5 fw-bold mb-1 text-white">Ciudad Segura nace para cambiar esta realidad</h4>
+              <p class="text-slate-300 small mb-0" style="color: #cbd5e1;">
+                Una herramienta web sencilla para centralizar los reportes del barrio San Luis de Chillogallo y brindar transparencia a toda la comunidad.
+              </p>
+            </div>
+            <div class="col-12 col-md-4 text-md-end">
+              <a href="#como-funcionara" class="btn btn-emerald text-white fw-semibold rounded-pill px-4 py-2" style="background: #10b981; border: none;">
+                ¿Cómo funcionará? <i class="bi bi-arrow-right ms-1"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 3. ¿CÓMO FUNCIONARÁ? SECTION -->
+    <section id="como-funcionara" class="py-5 py-md-6" style="background-color: #f1f5f9;">
+      <div class="container px-3 px-md-4">
+        
+        <div class="text-center max-w-3xl mx-auto mb-5">
+          <span class="badge rounded-pill px-3 py-1.5 mb-2 fw-semibold" style="background: #dcfce7; color: #166534; font-size: 0.8rem;">
+            Diseño del proceso
+          </span>
+          <h2 class="display-6 fw-bold text-slate-900 mb-3" style="letter-spacing: -0.02em;">
+            ¿Cómo funcionará la plataforma?
+          </h2>
+          <p class="fs-6 text-slate-600 mb-2" style="color: #475569; line-height: 1.6;">
+            Una vez desplegada, la plataforma permitirá gestionar las novedades del sector en 4 pasos sencillos y ordenados:
+          </p>
+          <div class="d-inline-flex align-items-center gap-1.5 px-3 py-1 rounded-pill bg-white border border-slate-300 text-slate-600" style="font-size: 0.75rem;">
+            <i class="bi bi-lock-fill text-muted"></i>
+            <span>* Funciones en etapa de programación (Próximamente disponibles)</span>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          {HOW_IT_WORKS_STEPS.map((step) => (
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="h-100 p-4 rounded-4 bg-white border border-slate-200 shadow-sm position-relative d-flex flex-column cs-transition hover-translate-y">
+                
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <span class="font-monospace fw-extrabold text-slate-300 fs-3" style="color: #cbd5e1; line-height: 1;">
+                    {step.stepNumber}
+                  </span>
+                  <span class="badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-2.5 py-1" style="font-size: 0.7rem; background: #f8fafc; color: #64748b;">
+                    Próximamente
+                  </span>
+                </div>
+
+                <div class="rounded-3 p-2.5 mb-3 text-emerald-600 d-inline-flex align-items-center justify-content-center" style="background: #ecfdf5; color: #059669; width: 44px; height: 44px;">
+                  <i class={`bi ${step.icon} fs-4`}></i>
+                </div>
+
+                <h3 class="h5 fw-bold text-slate-900 mb-2">{step.title}</h3>
+                <p class="text-slate-600 small mb-0 flex-grow-1" style="color: #475569; line-height: 1.6;">
+                  {step.description}
+                </p>
+
+              </div>
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. ESTADO DEL PROYECTO SECTION -->
+    <section id="estado" class="py-5 py-md-6 bg-white">
+      <div class="container px-3 px-md-4">
+        
+        <div class="text-center max-w-3xl mx-auto mb-5">
+          <span class="badge rounded-pill px-3 py-1.5 mb-2 fw-semibold" style="background: #fef3c7; color: #92400e; font-size: 0.8rem;">
+            Línea de progreso
+          </span>
+          <h2 class="display-6 fw-bold text-slate-900 mb-3" style="letter-spacing: -0.02em;">
+            Estado actual del proyecto
+          </h2>
+          <p class="fs-6 text-slate-600 mb-0" style="color: #475569; line-height: 1.6;">
+            Avanzamos con transparencia en cada fase para asegurar que la herramienta sea segura, rápida y fácil de usar para todos los vecinos.
+          </p>
+        </div>
+
+        <!-- Timeline Container -->
+        <div class="max-w-3xl mx-auto">
+          <div class="position-relative">
+            
+            {PROJECT_TIMELINE.map((item, index) => (
+              <div class="d-flex align-items-start gap-3.5 mb-4 position-relative">
+                
+                <!-- Status Icon Circle -->
+                <div class={`rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm ${
+                  item.status === 'completed' ? 'bg-emerald-500' :
+                  item.status === 'in-progress' ? 'bg-amber-500' : 'bg-slate-300'
+                }`} style={{
+                  width: '42px',
+                  height: '42px',
+                  backgroundColor: item.status === 'completed' ? '#10b981' : item.status === 'in-progress' ? '#f59e0b' : '#cbd5e1',
+                  color: item.status === 'pending' ? '#64748b' : '#ffffff',
+                  zIndex: 2
+                }}>
+                  {item.status === 'completed' && <i class="bi bi-check-lg fs-5"></i>}
+                  {item.status === 'in-progress' && <i class="bi bi-hammer fs-6"></i>}
+                  {item.status === 'pending' && <span class="fw-bold font-monospace small">{index + 1}</span>}
+                </div>
+
+                <!-- Content Card -->
+                <div class="flex-grow-1 p-3.5 p-md-4 rounded-4 border bg-white shadow-xs" style={{
+                  borderColor: item.status === 'in-progress' ? '#fde68a' : '#e2e8f0',
+                  backgroundColor: item.status === 'in-progress' ? '#fffbeb' : '#ffffff'
+                }}>
+                  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
+                    <h3 class="h6 fw-bold text-slate-900 mb-0">
+                      {item.phase}
+                    </h3>
+
+                    <!-- Status Badge -->
+                    <span class={`badge rounded-pill px-3 py-1 font-medium ${
+                      item.status === 'completed' ? 'bg-emerald-100 text-emerald-800' :
+                      item.status === 'in-progress' ? 'bg-amber-200 text-amber-900' : 'bg-slate-100 text-slate-600'
+                    }`} style={{
+                      backgroundColor: item.status === 'completed' ? '#d1fae5' : item.status === 'in-progress' ? '#fef3c7' : '#f1f5f9',
+                      color: item.status === 'completed' ? '#065f46' : item.status === 'in-progress' ? '#92400e' : '#64748b',
+                      fontSize: '0.75rem'
+                    }}>
+                      {item.badge}
+                    </span>
+                  </div>
+
+                  <p class="text-slate-600 small mb-0" style="color: #475569; line-height: 1.5;">
+                    {item.description}
+                  </p>
+                </div>
+
+              </div>
+            ))}
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 5. TIEMPO DE DESPLIEGUE SECTION -->
+    <section id="tiempo" class="py-5 py-md-6 text-white" style="background: linear-gradient(135deg, #070e1c 0%, #0f172a 100%);">
+      <div class="container px-3 px-md-4 text-center max-w-3xl">
+        
+        <div class="rounded-4 p-4.5 p-md-5 border shadow-2xl position-relative overflow-hidden" style="background: rgba(15, 23, 42, 0.95); border-color: rgba(16, 185, 129, 0.3) !important;">
+          
+          <!-- Decorative Glow -->
+          <div class="position-absolute top-0 start-50 translate-middle-x rounded-circle opacity-20" style="width: 250px; height: 250px; background: #10b981; filter: blur(80px); pointer-events: none;"></div>
+
+          <div class="position-relative">
+            <span class="badge rounded-pill px-3.5 py-1.5 mb-3 fw-semibold text-emerald-300" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.8rem;">
+              <i class="bi bi-clock-history me-1"></i> Cronograma estimado
+            </span>
+
+            <h2 class="display-6 fw-bold text-white mb-3" style="letter-spacing: -0.02em;">
+              Primer despliegue estimado
+            </h2>
+
+            <!-- Highlighted Timeline Container -->
+            <div class="my-4 py-4 px-3 rounded-3 bg-slate-900 border border-slate-700 d-inline-block w-100 max-w-md" style="background-color: #070e1c !important; border-color: rgba(255,255,255,0.12) !important;">
+              <div class="text-slate-400 small text-uppercase font-monospace mb-1" style="color: #94a3b8; font-size: 0.75rem; letter-spacing: 0.05em;">
+                Tiempo estimado de desarrollo
+              </div>
+              <div class="display-5 fw-extrabold text-emerald-400 mb-1" style="color: #34d399; letter-spacing: -0.03em;">
+                {ESTIMATED_TIMELINE}
+              </div>
+              <div class="fs-6 text-slate-300 fw-medium" style="color: #cbd5e1;">
+                Aproximadamente <span class="text-white border-bottom border-emerald-500 pb-0.5">{ESTIMATED_DATE}</span>
+              </div>
+            </div>
+
+            <!-- Disclaimer note -->
+            <p class="text-slate-300 small max-w-xl mx-auto mb-0" style="color: #cbd5e1; line-height: 1.6; font-size: 0.875rem;">
+              <i class="bi bi-info-circle me-1 text-emerald-400"></i>
+              El periodo es estimado y puede variar según las pruebas y validación de la plataforma con los vecinos y la directiva.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 6. PARTICIPACIÓN DE LA COMUNIDAD SECTION -->
+    <section id="comunidad" class="py-5 py-md-6 bg-white">
+      <div class="container px-3 px-md-4">
+        
+        <div class="row align-items-center gy-4 justify-content-center">
+          <div class="col-12 col-lg-10">
+            <div class="p-4 p-md-5 rounded-4 bg-slate-50 border border-slate-200 text-center text-md-start" style="background-color: #f8fafc; border-color: #e2e8f0 !important;">
+              
+              <div class="row align-items-center gy-4">
+                <div class="col-12 col-md-8">
+                  <span class="badge rounded-pill px-3 py-1.5 mb-2 fw-semibold" style="background: #e2e8f0; color: #334155; font-size: 0.8rem;">
+                    Comité de Seguridad Barrial
+                  </span>
+                  <h2 class="h3 fw-bold text-slate-900 mb-2">
+                    Participación de la comunidad
+                  </h2>
+                  <p class="text-slate-600 mb-3" style="color: #475569; line-height: 1.6;">
+                    "Ciudad Segura se construye pensando en las necesidades reales de nuestra comunidad."
+                  </p>
+                  <p class="text-slate-600 small mb-0" style="color: #64748b; line-height: 1.6;">
+                    Si estás visitando nuestro stand en la feria de seguridad, te invitamos a compartir tus ideas, absolver tus dudas con los dirigentes o sumarte a la iniciativa vecinal.
+                  </p>
+                </div>
+
+                <div class="col-12 col-md-4 text-center">
+                  <div class="p-3 rounded-4 bg-white border border-slate-200 shadow-sm d-inline-block w-100 max-w-xs">
+                    <div class="rounded-circle bg-emerald-100 text-emerald-600 p-3 mx-auto mb-2.5 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; background: #d1fae5; color: #059669;">
+                      <i class="bi bi-people-fill fs-3"></i>
+                    </div>
+                    <div class="fw-bold text-slate-900 small mb-1">Feria de Seguridad</div>
+                    <div class="text-slate-500 extra-small" style="font-size: 0.75rem; color: #64748b;">Stand del Comité Barrial</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 7. FOOTER SECTION -->
+  <footer class="bg-dark text-white py-4 border-top border-slate-800" style="background-color: #070e1c !important; border-color: rgba(255,255,255,0.08) !important;">
+    <div class="container px-3 px-md-4">
+      <div class="row align-items-center gy-3 text-center text-md-start">
+        
+        <div class="col-12 col-md-6">
+          <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2 mb-1">
+            <i class="bi bi-shield-lock-fill text-emerald-400 fs-5" style="color: #34d399;"></i>
+            <span class="fw-bold text-white fs-6">Ciudad Segura</span>
+          </div>
+          <p class="text-slate-400 small mb-0" style="color: #94a3b8; font-size: 0.8rem;">
+            Proyecto comunitario — Comité de Seguridad<br />
+            <strong>San Luis de Chillogallo</strong> · Quito, Ecuador
+          </p>
+        </div>
+
+        <div class="col-12 col-md-6 text-center text-md-end">
+          <div class="text-slate-400 small" style="color: #94a3b8; font-size: 0.75rem;">
+            Iniciativa vecinal sin fines de lucro
+          </div>
+          <div class="text-slate-400 extra-small mt-0.5" style="color: #64748b; font-size: 0.7rem;">
+            © {new Date().getFullYear()} Ciudad Segura · San Luis de Chillogallo
+          </div>
+        </div>
+
+      </div>
     </div>
-
-    <!-- Client side map & data initialization script -->
-    <script is:inline>
-        document.addEventListener("DOMContentLoaded", () => {
-            const reports = [
-                {
-                    id: "REP-101",
-                    code: "REP-2026-101",
-                    category: "alumbrado",
-                    categoryName: "Alumbrado Público",
-                    title: "Luminaria principal apagada en pasaje peatonal",
-                    description:
-                        "La luminaria poste #45 se apaga intermitentemente desde anoche.",
-                    lat: -0.1807,
-                    lng: -78.4678,
-                    locationName:
-                        "Av. República y Pasaje Eloy Alfaro (La Carolina)",
-                    status: "PENDIENTE",
-                    createdAt: "1 hora atrás",
-                    imageUrl:
-                        "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=600&q=80",
-                },
-                {
-                    id: "REP-102",
-                    code: "REP-2026-102",
-                    category: "sospechoso",
-                    categoryName: "Actividad Sospechosa",
-                    title: "Vehículo oscuro estacionado sin placas cerca al portón",
-                    description:
-                        "Automóvil sedan plomo estacionado con 2 ocupantes encendidos por más de 45m.",
-                    lat: -0.1782,
-                    lng: -78.475,
-                    locationName: "Calle Rumipamba y Av. Amazonas",
-                    status: "EN_PROCESO",
-                    createdAt: "4 horas atrás",
-                    imageUrl:
-                        "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=600&q=80",
-                },
-                {
-                    id: "REP-103",
-                    code: "REP-2026-103",
-                    category: "basura",
-                    categoryName: "Acumulación de Basura",
-                    title: "Desechos de poda acumulados obstruyendo la acera",
-                    description:
-                        "Fueron dejados sacos de restos vegetales en la acera.",
-                    lat: -0.185,
-                    lng: -78.46,
-                    locationName: "Av. González Suárez y Coruña",
-                    status: "ATENDIDO",
-                    createdAt: "14 horas atrás",
-                    imageUrl:
-                        "https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=600&q=80",
-                },
-                {
-                    id: "REP-104",
-                    code: "REP-2026-104",
-                    category: "ruido",
-                    categoryName: "Ruido Excesivo / Fiesta",
-                    title: "Música a alto volumen en inmueble deshabitado",
-                    description:
-                        "Ruido molesto afectando el descanso del sector durante la madrugada.",
-                    lat: -0.182,
-                    lng: -78.471,
-                    locationName: "Pasaje El Jardín #142",
-                    status: "PENDIENTE",
-                    createdAt: "2 horas atrás",
-                    imageUrl: null,
-                },
-                {
-                    id: "REP-105",
-                    code: "REP-2026-105",
-                    category: "vandalismo",
-                    categoryName: "Grafiti / Vandalismo",
-                    title: "Manchado de pintura en pared posterior de la casa comunal",
-                    description:
-                        "Pintas recientes realizadas durante el fin de semana.",
-                    lat: -0.175,
-                    lng: -78.482,
-                    locationName: "Calle Batán Alto y Shyris",
-                    status: "ATENDIDO",
-                    createdAt: "1 día atrás",
-                    imageUrl:
-                        "https://images.unsplash.com/photo-1572949645841-094f3a9c4c94?auto=format&fit=crop&w=600&q=80",
-                },
-            ];
-
-            const isComite =
-                new URLSearchParams(window.location.search).get("role") ===
-                "comite";
-            let activeCategory = "all";
-            let activeStatus = "all";
-            let selectedReportId = null;
-
-            if (typeof L !== "undefined") {
-                const map = L.map("leaflet-main-map", {
-                    center: [-0.1807, -78.4678],
-                    zoom: 14,
-                    zoomControl: true,
-                });
-
-                L.tileLayer(
-                    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-                    {
-                        attribution: "&copy; OpenStreetMap &copy; CARTO",
-                        maxZoom: 19,
-                    },
-                ).addTo(map);
-
-                const markersGroup = L.layerGroup().addTo(map);
-
-                function getStatusColor(status) {
-                    if (status === "PENDIENTE") return "#f59e0b";
-                    if (status === "EN_PROCESO") return "#3b82f6";
-                    if (status === "ATENDIDO") return "#10b981";
-                    return "#64748b";
-                }
-
-                function renderMapAndList() {
-                    markersGroup.clearLayers();
-                    const sidebarContainer = document.getElementById(
-                        "incidents-sidebar-list",
-                    );
-                    sidebarContainer.innerHTML = "";
-
-                    const filtered = reports.filter((r) => {
-                        const matchesCat =
-                            activeCategory === "all" ||
-                            r.category === activeCategory;
-                        const matchesStat =
-                            activeStatus === "all" || r.status === activeStatus;
-                        return matchesCat && matchesStat;
-                    });
-
-                    document.getElementById("filtered-count").textContent =
-                        `${filtered.length} reportes`;
-
-                    filtered.forEach((r) => {
-                        const color = getStatusColor(r.status);
-
-                        const customIcon = L.divIcon({
-                            className: "custom-leaflet-pin",
-                            html: `<div style="background-color: ${color}; width: 26px; height: 26px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 0 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: white;">
-                      <i class="bi bi-geo-alt-fill" style="font-size: 14px;"></i>
-                    </div>`,
-                            iconSize: [26, 26],
-                            iconAnchor: [13, 13],
-                        });
-
-                        const marker = L.marker([r.lat, r.lng], {
-                            icon: customIcon,
-                        }).addTo(markersGroup);
-
-                        const popupHtml = `
-              <div style="min-width: 220px; font-family: system-ui;">
-                <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
-                  <span class="badge" style="background-color: ${color}; font-size: 0.65rem;">${r.status}</span>
-                  <span class="small text-slate-400" style="font-size: 0.7rem;">${r.code}</span>
-                </div>
-                <strong style="font-size: 0.85rem; color: #ffffff; display: block; margin-bottom: 4px;">${r.title}</strong>
-                <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 8px;">
-                  <i class="bi bi-geo-alt me-1"></i>${r.locationName}
-                </div>
-                <div class="d-flex gap-1 mt-2">
-                  <a href="/reportes/${r.id}?role=${isComite ? "comite" : "ciudadano"}" class="btn btn-xs btn-primary w-100 rounded-pill py-1" style="font-size: 0.75rem;">Ver Detalle</a>
-                  ${isComite ? `<button onclick="window.openStatusModal('${r.id}')" class="btn btn-xs btn-danger w-100 rounded-pill py-1" style="font-size: 0.75rem;">Estado</button>` : ""}
-                </div>
-              </div>
-            `;
-
-                        marker.bindPopup(popupHtml);
-
-                        const card = document.createElement("div");
-                        card.className =
-                            "p-3 rounded-3 mb-2 border cg-card-hover cursor-pointer";
-                        card.style.background = "rgba(15, 23, 42, 0.7)";
-                        card.style.borderColor = "#1e3a66";
-
-                        card.innerHTML = `
-              <div class="d-flex align-items-center justify-content-between mb-1">
-                <span class="badge" style="background-color: ${color}20; color: ${color}; border: 1px solid ${color}40; font-size: 0.65rem;">
-                  ${r.status}
-                </span>
-                <span class="small text-slate-400 font-monospace" style="font-size: 0.7rem;">${r.code}</span>
-              </div>
-              <h6 class="fw-bold text-white mb-1" style="font-size: 0.85rem;">${r.title}</h6>
-              <div class="small text-slate-300 mb-2" style="font-size: 0.75rem; color: #94a3b8;">
-                <i class="bi bi-geo-alt me-1 text-danger"></i>${r.locationName}
-              </div>
-              <div class="d-flex align-items-center justify-content-between small text-slate-400" style="font-size: 0.7rem;">
-                <span><i class="bi bi-clock me-1"></i>${r.createdAt}</span>
-                <a href="/reportes/${r.id}?role=${isComite ? "comite" : "ciudadano"}" class="text-primary text-decoration-none fw-semibold">
-                  Ver Novedad <i class="bi bi-arrow-right"></i>
-                </a>
-              </div>
-            `;
-
-                        card.addEventListener("click", () => {
-                            map.setView([r.lat, r.lng], 16, { animate: true });
-                            marker.openPopup();
-                        });
-
-                        sidebarContainer.appendChild(card);
-                    });
-                }
-
-                renderMapAndList();
-
-                document
-                    .querySelectorAll(".category-filter-btn")
-                    .forEach((btn) => {
-                        btn.addEventListener("click", (e) => {
-                            document
-                                .querySelectorAll(".category-filter-btn")
-                                .forEach((b) =>
-                                    b.classList.remove("active", "btn-primary"),
-                                );
-                            btn.classList.add("active", "btn-primary");
-                            activeCategory = btn.dataset.category;
-                            renderMapAndList();
-                        });
-                    });
-
-                document
-                    .querySelectorAll(".status-filter-item")
-                    .forEach((item) => {
-                        item.addEventListener("click", (e) => {
-                            e.preventDefault();
-                            activeStatus = item.dataset.status;
-                            renderMapAndList();
-                        });
-                    });
-
-                window.openStatusModal = function (reportId) {
-                    selectedReportId = reportId;
-                    const r = reports.find((x) => x.id === reportId);
-                    if (r) {
-                        document.getElementById(
-                            "modal-report-code",
-                        ).textContent = r.code;
-                        document.getElementById("modal-status-select").value =
-                            r.status;
-                        const modal = new bootstrap.Modal(
-                            document.getElementById("statusModal"),
-                        );
-                        modal.show();
-                    }
-                };
-
-                document
-                    .getElementById("save-status-btn")
-                    .addEventListener("click", () => {
-                        if (selectedReportId) {
-                            const r = reports.find(
-                                (x) => x.id === selectedReportId,
-                            );
-                            if (r) {
-                                const newStatus = document.getElementById(
-                                    "modal-status-select",
-                                ).value;
-                                r.status = newStatus;
-                                renderMapAndList();
-                                const modalEl =
-                                    document.getElementById("statusModal");
-                                const modal =
-                                    bootstrap.Modal.getInstance(modalEl);
-                                if (modal) modal.hide();
-                                alert(
-                                    `Estado del reporte ${r.code} actualizado exitosamente a: ${newStatus}`,
-                                );
-                            }
-                        }
-                    });
-            }
-        });
-    </script>
-</BaseLayout>
+  </footer>
+</LandingLayout>
